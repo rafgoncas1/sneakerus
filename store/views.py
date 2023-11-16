@@ -13,7 +13,7 @@ def store(request):
 def cart(request):
     if request.user.is_authenticated:
         customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status='No Realizado')
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
         items = order.orderitem_set.all()
     else:
         items = []
