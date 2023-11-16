@@ -1,0 +1,3 @@
+django
+django-fernet-fields-v2
+pillow

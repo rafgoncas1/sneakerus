@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,6 +24,8 @@ SECRET_KEY = 'django-insecure-pjur9k@2expfwtktdut0pmq9n5x9fo)7*&wfd&c33^gach3a7f
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+FERNET_KEYS = [b'SlxwG3KeBnrBRXNiXP-XTN6E0OOqH1WvRNa5tCdxLNg=']
 
 ALLOWED_HOSTS = []
 
@@ -116,7 +118,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
+
+MEDIA_ROOT = os.path.join(BASE_DIR,'static/products')
+MEDIA_URL = '/products/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
