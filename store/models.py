@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from django.db import models
 from django.contrib.auth.models import UserManager
 from django.contrib.auth.models import AbstractBaseUser
@@ -26,7 +27,7 @@ class SneakerUserManager(UserManager):
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_admin", True)
         return self._create_user(email, password, **extra_fields)
-
+    
 class SneakerUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name='email', max_length=60, unique=True)
     date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
@@ -49,14 +50,11 @@ class SneakerUser(AbstractBaseUser, PermissionsMixin):
     def has_module_perms(self, app_label):
         return True
     
-    @property
-    def is_staff(self):
-        return self.is_admin
-    
     class Meta:
         verbose_name = 'User'
         verbose_name_plural = 'Users'
         ordering = ['-date_joined']
+    
     
 
 class Customer(models.Model):

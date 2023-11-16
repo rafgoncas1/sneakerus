@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from .models import *
-from .forms import LoginForm
-from django.contrib.auth import login
+from .forms import LoginForm, RegisterForm
+from django.contrib.auth import login, logout
 from django.shortcuts import redirect
-from .backends import EmailBackend
+from django.contrib.auth import authenticate
 
 def store(request):
     products = Product.objects.all()
@@ -35,15 +35,11 @@ def auth_login(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            user = EmailBackend.authenticate(request, email=email, password=password)
-            print(user)
+            user = authenticate(request, email=email, password=password)
             if user is not None:
-                backend = 'django.contrib.auth.backends.ModelBackend'
-                user.backend = backend
                 login(request, user)
                 return redirect('store')
             else:
-                print(form.errors)
                 form.add_error(None, 'Usuario o contraseña incorrectos')
                 context = {'form': form}
                 return render(request, 'store/login.html', context)
@@ -55,4 +51,27 @@ def auth_login(request):
         form = LoginForm()
         context = {'form': form}
         return render(request, 'store/login.html', context)
+
+def register(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # create customer for user
+            Customer.objects.create(user=user, email=user.email, name=form.cleaned_data['name'])
+            login(request, user)
+            return redirect('store')
+        else:
+            form.add_error(None, form.errors)
+            context = {'form': form}
+            return render(request, 'store/register.html', context)
+    else:
+        form = RegisterForm()
+        context = {'form': form}
+        return render(request, 'store/register.html', context)
+    
+def auth_logout(request):
+    logout(request)
+    return redirect('store')
+    
     
