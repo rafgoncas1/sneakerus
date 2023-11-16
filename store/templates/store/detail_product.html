@@ -13,10 +13,37 @@
       </div>
       <div class="col-md-6">
         <h2>{{ product.name }}</h2>
+        <h4 v-if="{{product.brand}}"> {{product.brand}}</h4>
         <p><strong>Precio:</strong> ${{ product.price|floatformat:2 }}</p>
-        <!-- Puedes agregar más detalles del producto aquí -->
+        <p><strong>Descripción:</strong> {{ product.description }}</p>
+        <p><strong>Detalles:</strong> {{product.details}}</p>
+        <p><strong>
+          {% for color in colors %}
+            <span >{{ color }}</span> /
+          {% endfor %}
+        </strong></p>
+        <p><strong>
+          {% for size in sizes %}
+            <button class="size-btn">{{ size }}</button>
+          {% endfor %}
+        </strong></p>
+        
         <button class="btn btn-outline-secondary add-btn">Añadir al Carrito</button>
       </div>
     </div>
   </div>
+
+
+  <script>
+    var sizeButtons = document.getElementsByClassName('size-btn');
+    for (var i = 0; i < sizeButtons.length; i++) {
+        sizeButtons[i].addEventListener('click', function() {
+            for (var j = 0; j < sizeButtons.length; j++) {
+                sizeButtons[j].classList.remove('selected');
+            }
+            this.classList.add('selected');
+        });
+    }
+</script>
+
 {% endblock content %}

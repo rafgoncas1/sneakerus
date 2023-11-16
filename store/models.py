@@ -71,11 +71,53 @@ class Brand(models.Model):
     def __str__(self):
         return self.name
    
+class Color(models.Model):
+    name = models.CharField(max_length=20, null=False, unique=True, blank=False)
+
+    def __str__(self):
+        return self.name
+
+class Size(models.Model):
+    name = models.FloatField(null=False, unique=True)
+
+    def __str__(self):
+        return str(self.name)
+
+
+class ProductColor(models.Model):
+    product = models.ForeignKey('Product', null=True, on_delete = models.SET_NULL)
+    color = models.ForeignKey('Color', null=True, on_delete = models.SET_NULL)
+    
+    def __str__(self):
+        return str(self.color)
+
+    class Meta:
+        verbose_name = 'Product color'
+        verbose_name_plural = 'Product colors'
+        ordering = ['product', 'color']
+
+class ProductSize(models.Model):
+    product = models.ForeignKey('Product', null=True, on_delete = models.SET_NULL)
+    size = models.ForeignKey('Size', null=True, on_delete = models.SET_NULL)
+    quantity = models.IntegerField(default=0, null=True, blank=True)
+    
+    def __str__(self):
+        return str(self.size)
+
+    class Meta:
+        verbose_name = 'Product size'
+        verbose_name_plural = 'Product sizes'
+        ordering = ['product', 'size']
+
 class Product(models.Model):
     name = models.CharField(max_length=200 , null=True)
     price = models.FloatField()
     brand = models.ForeignKey(Brand, null=True, on_delete = models.SET_NULL)
     image = models.ImageField(null=True, blank=True)
+    description = models.CharField(max_length=200 , null=True)
+    details = models.CharField(max_length=200 , null=True)
+    
+
     
     def __str__(self):
         return self.name

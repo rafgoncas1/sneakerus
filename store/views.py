@@ -32,14 +32,9 @@ def about(request):
 def productDetails(request, producto_id):
     # Obtén el objeto Producto con el ID proporcionado
     producto = get_object_or_404(Product, pk=producto_id)
-       
-
-       
-
-    # Puedes agregar lógica adicional aquí si es necesario
-
-    # Renderiza la plantilla de detalle_producto.html con el producto
-    return render(request, 'store/detail_product.html', {'product': producto})
+    colors = producto.productcolor_set.all()
+    sizes = producto.productsize_set.all()
+    return render(request, 'store/detail_product.html', {'product': producto, 'colors': colors, 'sizes': sizes})
 def auth_login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
