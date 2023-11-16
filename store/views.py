@@ -34,6 +34,8 @@ def productDetails(request, producto_id):
     producto = get_object_or_404(Product, pk=producto_id)
        
 
+       
+
     # Puedes agregar lógica adicional aquí si es necesario
 
     # Renderiza la plantilla de detalle_producto.html con el producto
