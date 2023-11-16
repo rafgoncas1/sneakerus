@@ -1,0 +1,49 @@
+{% extends 'store/main.html' %}
+{% load static %}
+
+{% block content %}
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-6">
+        {% if product.image %}
+          <img class="img-fluid" src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+          <img class="img-fluid" src="{% static 'products/placeholder.png' %}" alt="{{ product.name }}">
+        {% endif %}
+      </div>
+      <div class="col-md-6">
+        <h2>{{ product.name }}</h2>
+        <h4 v-if="{{product.brand}}"> {{product.brand}}</h4>
+        <p><strong>Precio:</strong> ${{ product.price|floatformat:2 }}</p>
+        <p><strong>Descripción:</strong> {{ product.description }}</p>
+        <p><strong>Detalles:</strong> {{product.details}}</p>
+        <p><strong>
+          {% for color in colors %}
+            <span >{{ color }}</span> /
+          {% endfor %}
+        </strong></p>
+        <p><strong>
+          {% for size in sizes %}
+            <button class="size-btn">{{ size }}</button>
+          {% endfor %}
+        </strong></p>
+        
+        <button class="btn btn-outline-secondary add-btn">Añadir al Carrito</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    var sizeButtons = document.getElementsByClassName('size-btn');
+    for (var i = 0; i < sizeButtons.length; i++) {
+        sizeButtons[i].addEventListener('click', function() {
+            for (var j = 0; j < sizeButtons.length; j++) {
+                sizeButtons[j].classList.remove('selected');
+            }
+            this.classList.add('selected');
+        });
+    }
+</script>
+
+{% endblock content %}

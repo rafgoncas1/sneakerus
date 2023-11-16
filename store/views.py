@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from .models import *
 from .forms import LoginForm, RegisterForm
 from django.contrib.auth import login, logout
@@ -29,6 +29,12 @@ def about(request):
     context = {}
     return render(request, 'store/about.html')
 
+def productDetails(request, producto_id):
+    # Obtén el objeto Producto con el ID proporcionado
+    producto = get_object_or_404(Product, pk=producto_id)
+    colors = producto.productcolor_set.all()
+    sizes = producto.productsize_set.all()
+    return render(request, 'store/detail_product.html', {'product': producto, 'colors': colors, 'sizes': sizes})
 def auth_login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
