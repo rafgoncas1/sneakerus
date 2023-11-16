@@ -1,0 +1,22 @@
+{% extends 'store/main.html' %}
+{% load static %}
+
+{% block content %}
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-6">
+        {% if product.image %}
+          <img class="img-fluid" src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+          <img class="img-fluid" src="{% static 'products/placeholder.png' %}" alt="{{ product.name }}">
+        {% endif %}
+      </div>
+      <div class="col-md-6">
+        <h2>{{ product.name }}</h2>
+        <p><strong>Precio:</strong> ${{ product.price|floatformat:2 }}</p>
+        <!-- Puedes agregar más detalles del producto aquí -->
+        <button class="btn btn-outline-secondary add-btn">Añadir al Carrito</button>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

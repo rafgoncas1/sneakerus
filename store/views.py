@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from .models import *
 
 def store(request):
@@ -24,3 +24,13 @@ def checkout(request):
 def about(request):
     context = {}
     return render(request, 'store/about.html')
+
+def productDetails(request, producto_id):
+    # Obtén el objeto Producto con el ID proporcionado
+    producto = get_object_or_404(Product, pk=producto_id)
+       
+
+    # Puedes agregar lógica adicional aquí si es necesario
+
+    # Renderiza la plantilla de detalle_producto.html con el producto
+    return render(request, 'store/detail_product.html', {'product': producto})
