@@ -27,7 +27,7 @@ DEBUG = True
 
 #FERNET_KEYS = [b'SlxwG3KeBnrBRXNiXP-XTN6E0OOqH1WvRNa5tCdxLNg=']
 
-ALLOWED_HOSTS = ["localhost"]
+ALLOWED_HOSTS = ["localhost", "https://sneakerus.onrender.com"]
 
 
 # Application definition
@@ -76,7 +76,7 @@ WSGI_APPLICATION = 'SneakerUS.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 DATABASES = {
-    "default": dj_database_url.parse("postgres://sneakerus_db_skuz_user:cuh6ib8hMa3M1AEFdEzl9aR5fzcP2bfl@dpg-clbmcjofvntc73ec8v50-a.frankfurt-postgres.render.com/sneakerus_db_skuz")
+    "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
 }
 
 
