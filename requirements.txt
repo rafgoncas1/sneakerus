@@ -3,3 +3,4 @@ django-fernet-fields-v2
 pillow
 psycopg2
 dj-database-url
+gunicorn
