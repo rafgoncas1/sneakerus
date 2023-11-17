@@ -27,7 +27,7 @@ DEBUG = True
 
 #FERNET_KEYS = [b'SlxwG3KeBnrBRXNiXP-XTN6E0OOqH1WvRNa5tCdxLNg=']
 
-ALLOWED_HOSTS = ["localhost", "https://sneakerus.onrender.com"]
+ALLOWED_HOSTS = ["localhost", "sneakerus.onrender.com"]
 
 
 # Application definition
