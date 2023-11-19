@@ -137,6 +137,7 @@ class Order(models.Model):
     customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
     date_ordered = models.DateTimeField(auto_now_add=True)
     status = models.ForeignKey(Status, null=True, on_delete = models.SET_NULL)
+    tracking_id=models.CharField(max_length=200 , null=True)
 
     def __str__(self):
         return str(self.id)

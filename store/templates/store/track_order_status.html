@@ -1,0 +1,41 @@
+<!-- track_order_status.html -->
+<!DOCTYPE html>
+{% load static %}
+
+<html>
+<head>
+    <title>Estado del Pedido - {{ order.tracking_id }}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+    <!-- Barra de Navegación (si deseas mantenerla en esta página) -->
+    <nav class="navbar navbar-expand-lg bg-primary bg-body-tertiary" data-bs-theme="dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'store' %}">SneakerUS</a>
+            <!-- Resto del código de la barra de navegación -->
+        </div>
+    </nav>
+
+    <main class="flex-shrink-0">
+        <div class="container">
+            <br>
+            <h2>Estado del Pedido - {{ order.tracking_id }}</h2>
+            <p>Estado: {{ order.status }}</p>
+            <p>Fecha de pedido: {{ order.date_ordered }}</p>
+        </div>
+    </main>
+
+    <!-- Pie de Página (si deseas mantenerlo en esta página) -->
+    <div class="container">
+        <footer class="py-3 my-4 footer mt-auto">
+            <ul class="nav fixed-bottom justify-content-center border-bottom pb-3 mb-3">
+                <li class="nav-item"><a href="/" class="nav-link px-2 text-body-secondary">Inicio</a></li>
+                <li class="nav-item"><a href="/about" class="nav-link px-2 text-body-secondary">Conócenos</a></li>
+            </ul>
+        </footer>
+    </div>
+</body>
+</html>
