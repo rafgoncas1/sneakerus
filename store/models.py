@@ -141,12 +141,18 @@ class Order(models.Model):
 
     def __str__(self):
         return str(self.id)
+    def calculate_total_price(self):
+        order_items = OrderItem.objects.filter(order=self)
+        total_price = sum(item.quantity * item.product.price for item in order_items)
+        return total_price
     
 class OrderItem(models.Model):
     product = models.ForeignKey(Product, null=True, on_delete = models.SET_NULL)
     order = models.ForeignKey(Order, null=True, on_delete = models.SET_NULL)
     quantity = models.IntegerField(default=0, null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
+    total_price = models.FloatField(default=0)  # Nuevo campo
+
 
 class ShippingAddress(models.Model):
     customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)

@@ -6,6 +6,7 @@ from .forms import LoginForm, RegisterForm
 from django.contrib.auth import login, logout
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required
 
 def store(request):
     products = Product.objects.all()
@@ -93,8 +94,22 @@ def track_orders(request):
 
 def track_order(request, tracking_id):
     try:
-        order = Order.objects.get(tracking_id=tracking_id)
-        return render(request, 'store/track_order_status.html', {'order': order})
+        order = get_object_or_404(Order, tracking_id=tracking_id)
+        order_items = OrderItem.objects.filter(order=order)
+
+        # Calcular el costo total del pedido
+        total_cost = order.calculate_total_price()
+        print(total_cost)
+
+        context = {'order': order, 'order_items': order_items, 'total_cost': total_cost}
     except Order.DoesNotExist:
         return render(request, 'store/track_order.html', {'error_message': f'No existe un pedido con ID de seguimiento {tracking_id}.'})
-    
+
+    return render(request, 'store/track_order_status.html', context)
+
+@login_required
+def view_orders(request):
+    user_orders = Order.objects.filter(customer=request.user.customer)
+    context = {'user_orders': user_orders}
+    return render(request, 'store/view_orders.html', context)
+
