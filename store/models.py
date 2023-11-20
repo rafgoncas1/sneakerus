@@ -151,8 +151,6 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, null=True, on_delete = models.SET_NULL)
     quantity = models.IntegerField(default=0, null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
-    total_price = models.FloatField(default=0)  # Nuevo campo
-
 
 class ShippingAddress(models.Model):
     customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
