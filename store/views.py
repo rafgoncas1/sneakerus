@@ -87,7 +87,7 @@ def track_orders(request):
     if request.method == 'POST':
         tracking_id = request.POST.get('tracking_id')
         if tracking_id:
-            return HttpResponseRedirect(reverse('track_order', args=[tracking_id]))
+            return HttpResponseRedirect(reverse('tracking', args=[tracking_id]))
         else:
             return render(request, 'store/track_order.html', {'error_message': 'Por favor, proporciona un ID de seguimiento.'})
     return render(request, 'store/track_order.html')
