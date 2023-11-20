@@ -35,6 +35,7 @@ def productDetails(request, producto_id):
     colors = producto.productcolor_set.all()
     sizes = producto.productsize_set.all()
     return render(request, 'store/detail_product.html', {'product': producto, 'colors': colors, 'sizes': sizes})
+
 def auth_login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -80,4 +81,44 @@ def auth_logout(request):
     logout(request)
     return redirect('store')
     
-    
+def search(request):
+    query = request.GET.get('q', '')
+
+    colors = Color.objects.all()
+    sizes = Size.objects.all()
+    brands = Brand.objects.all()
+
+    color_id = request.GET.get('color', '')
+    size_id = request.GET.get('talla', '')
+    brand_id = request.GET.get('marca', '')
+
+    filters = {}
+    filters_applied = ""
+    if color_id:
+        color = colors.get(id=color_id)
+        filters['productcolor__color__id'] = color_id
+        filters_applied += f"Color: {color.name}. "
+    if size_id:
+        size = sizes.get(id=size_id)
+        filters['productsize__size__id'] = size_id
+        filters_applied += f"Talla: {size.name}. "
+    if brand_id:
+        brand = brands.get(id=brand_id)
+        filters['brand__id'] = brand_id
+        filters_applied += f"Marca: {brand.name}. "
+
+    products = Product.objects.filter(name__icontains=query, **filters)
+
+    context = {
+        'products': products, 
+        'query': query, 
+        'colors': colors, 
+        'sizes': sizes, 
+        'brands': brands, 
+        'color_id': color_id, 
+        'size_id': size_id, 
+        'brand_id': brand_id,
+        'filters_applied': filters_applied,
+    }
+
+    return render(request, 'store/search.html', context)

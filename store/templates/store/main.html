@@ -36,8 +36,8 @@
                   </ul>
                 </li>
               </ul>
-              <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+              <form class="d-flex" action="/search" method="get" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
               </form>
               <a href="{% url 'cart' %}">
                   <img id="cart-icon" src="{% static 'images/cart.png' %}">
