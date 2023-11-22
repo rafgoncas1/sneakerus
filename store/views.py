@@ -4,10 +4,22 @@ from .forms import LoginForm, RegisterForm
 from django.contrib.auth import login, logout
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate
+from django.http import JsonResponse
+import json
 
 def store(request):
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
+
     products = Product.objects.all()
-    context = {'products': products}
+    context = {'products': products, 'cartItems': cartItems}
     return render(request, 'store/store.html', context)
 
 def cart(request):
@@ -15,26 +27,60 @@ def cart(request):
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
         items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
     else:
         items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
 
-    context = {'items': items}
+    context = {'items': items, 'order': order, 'cartItems': cartItems}
     return render(request, 'store/cart.html', context)
 
 def checkout(request):
-    context = {}
-    return render(request, 'store/checkout.html')
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
+    
+    context = {'items': items, 'order': order, 'cartItems': cartItems}
+    return render(request, 'store/checkout.html', context)
 
 def about(request):
-    context = {}
-    return render(request, 'store/about.html')
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
+    
+    context = {'cartItems': cartItems}
+    return render(request, 'store/about.html', context)
 
 def productDetails(request, producto_id):
-    # Obtén el objeto Producto con el ID proporcionado
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
+        
     producto = get_object_or_404(Product, pk=producto_id)
     colors = producto.productcolor_set.all()
-    sizes = producto.productsize_set.all()
-    return render(request, 'store/detail_product.html', {'product': producto, 'colors': colors, 'sizes': sizes})
+    # sizes ordered by name
+    sizes = producto.productsize_set.all().order_by('size__name')
+    return render(request, 'store/product.html', {'product': producto, 'colors': colors, 'sizes': sizes, 'cartItems': cartItems})
+
 def auth_login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -63,7 +109,6 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # create customer for user
             Customer.objects.create(user=user, email=user.email, name=form.cleaned_data['name'])
             login(request, user)
             return redirect('store')
@@ -79,5 +124,37 @@ def register(request):
 def auth_logout(request):
     logout(request)
     return redirect('store')
+ 
+def updateItem(request):
+    data = json.loads(request.body)
+    productId = data['productId']
+    size_name = data['size']
+    action = data['action']
+    
+    customer = Customer.objects.get_or_create(user=request.user)[0]
+    product_size = ProductSize.objects.get(size=Size.objects.get(name=size_name), product=Product.objects.get(id=productId))
+    if not product_size:
+            return JsonResponse({'error': 'No existe la talla del producto'}, safe=False)
+    order, created = Order.objects.get_or_create(customer=customer, status=Status.objects.get(name='No realizado'))    
+    orderItem, created = OrderItem.objects.get_or_create(order=order, product_size=product_size)
+    if action == 'add':
+        if product_size.stock <= 0:
+            return JsonResponse({'error': 'Talla no disponible'}, safe=False)
+        
+        product_size.stock = product_size.stock - 1
+        product_size.save()
+
+        orderItem.quantity = orderItem.quantity + 1
+        orderItem.save()
+    
+    elif action == 'remove':
+        orderItem.quantity = orderItem.quantity - 1
+        orderItem.save()
+        product_size.stock = product_size.stock + 1
+        product_size.save()
     
     
+    if orderItem.quantity <= 0:
+        orderItem.delete()
+
+    return JsonResponse({"success": "Order updated successfully"}, safe=False)
