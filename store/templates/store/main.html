@@ -36,7 +36,7 @@
                   </ul>
                 </li>
               </ul>
-              <form class="d-flex" action="/search" method="get" role="search">
+              <form class="d-flex" action="/" method="get" role="search">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
               </form>
               <a href="{% url 'cart' %}">
@@ -44,9 +44,23 @@
               </a>
               <p id="cart-total">0</p>
               {% if not user.is_authenticated %}
-                <a href="{% url 'login' %}"class="btn btn-warning ms-lg-3 rounded-2">Iniciar Sesión</a>
+                  <a href="{% url 'login' %}"class="btn btn-warning ms-lg-3 rounded-2">Iniciar Sesión</a>
               {% else %}
-                <a href="{% url 'logout' %}"class="btn btn-outline-info ms-lg-3 rounded-2">{{user.email}}</a>
+                  <div class="dropdown">
+                      <button class="btn btn-outline-info dropdown-toggle ms-lg-3 rounded-2" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                          {{user.email}}
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                          <li><a class="dropdown-item" href="{% url 'profile' user.id %}">Ver perfil</a></li>
+                          {% if user.is_staff %}
+                              <li><a class="dropdown-item" href="{% url 'customer_list' %}">Lista de clientes</a></li>
+                          {% endif %}
+                          <li><a class="dropdown-item" href="{% url 'update_delivery' user.id %}">Modificar datos de entrega</a></li>
+                          <li><a class="dropdown-item" href="{% url 'update_payment' user.id %}">Modificar forma de pago</a></li>
+                          <li><hr class="dropdown-divider"></li>
+                          <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
+                      </ul>
+                  </div>
               {% endif %}
             </div>
           </div>

@@ -3,42 +3,7 @@
 
 {% block content %}
 <div class="row">
-    {% if query %}
-        <h2>Tu búsqueda de: "{{ query }}"</h2>
-    {% else %}
-        <h2>Todos los productos:</h2>
-    {% endif %}
     
-    <form action="/search" method="get">
-        <input type="hidden" name="q" value="{{ query }}">
-        <select id="color" name="color">
-            <option value="">Color</option>
-            {% for color in colors %}
-                <option value="{{ color.id }}">{{ color.name }}</option>
-            {% endfor %}
-        </select>
-        <select id="talla" name="talla">
-            <option value="">Talla</option>
-            {% for size in sizes %}
-                <option value="{{ size.id }}">{{ size.name }}</option>
-            {% endfor %}
-        </select>
-        <select id="marca" name="marca">
-            <option value="">Marca</option>
-            {% for brand in brands %}
-                <option value="{{ brand.id }}">{{ brand.name }}</option>
-            {% endfor %}
-        </select>
-        <input type="submit" value="Aplicar filtros" class="filter-submit">
-    </form>
-
-    <p>{{ filters_applied }}</p>
-
-    {% if products|length > 1 %}
-        <p>[{{ products|length }} resultados]</p>
-    {% else %}
-        <p>[{{ products|length }} resultado]</p>
-    {% endif %}
     {% for product in products %}
         <div class="col-lg-4">
         <a href="{% url 'detalle_producto' product.id %}">
@@ -59,8 +24,6 @@
                 </strong></h4>
         </div>
     </div>
-    {% empty %}
-        <p>No se encontraron productos.</p>
     {% endfor %}
 </div>
 {% endblock content %}

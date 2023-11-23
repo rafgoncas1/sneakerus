@@ -1,13 +1,54 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from .models import *
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, RegisterForm, CustomerForm
 from django.contrib.auth import login, logout
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+
+
+
 
 def store(request):
-    products = Product.objects.all()
-    context = {'products': products}
+    query = request.GET.get('q', '')
+
+    colors = Color.objects.all()
+    sizes = Size.objects.all()
+    brands = Brand.objects.all()
+
+    color_id = request.GET.get('color', '')
+    size_id = request.GET.get('talla', '')
+    brand_id = request.GET.get('marca', '')
+
+    filters = {}
+    filters_applied = ""
+    if color_id:
+        color = colors.get(id=color_id)
+        filters['productcolor__color__id'] = color_id
+        filters_applied += f"Color: {color.name}. "
+    if size_id:
+        size = sizes.get(id=size_id)
+        filters['productsize__size__id'] = size_id
+        filters_applied += f"Talla: {size.name}. "
+    if brand_id:
+        brand = brands.get(id=brand_id)
+        filters['brand__id'] = brand_id
+        filters_applied += f"Marca: {brand.name}. "
+
+    products = Product.objects.filter(name__icontains=query, **filters)
+
+    context = {
+        'products': products, 
+        'query': query, 
+        'colors': colors, 
+        'sizes': sizes, 
+        'brands': brands, 
+        'color_id': color_id, 
+        'size_id': size_id, 
+        'brand_id': brand_id,
+        'filters_applied': filters_applied,
+    }
     return render(request, 'store/store.html', context)
 
 def cart(request):
@@ -80,45 +121,59 @@ def register(request):
 def auth_logout(request):
     logout(request)
     return redirect('store')
-    
-def search(request):
-    query = request.GET.get('q', '')
 
-    colors = Color.objects.all()
-    sizes = Size.objects.all()
-    brands = Brand.objects.all()
+def profile(request, user_id):
+    customer = get_object_or_404(Customer, pk=user_id)
+    shipping_address = ShippingAddress.objects.filter(customer=customer)
+    return render(request, 'store/profile.html', {'customer': customer, 'shipping_address': shipping_address})
 
-    color_id = request.GET.get('color', '')
-    size_id = request.GET.get('talla', '')
-    brand_id = request.GET.get('marca', '')
+def updateDelivery(request, user_id):
+    customer = get_object_or_404(Customer, pk=user_id)
+    return render(request, 'store/update_delivery.html', {'customer': customer})
 
-    filters = {}
-    filters_applied = ""
-    if color_id:
-        color = colors.get(id=color_id)
-        filters['productcolor__color__id'] = color_id
-        filters_applied += f"Color: {color.name}. "
-    if size_id:
-        size = sizes.get(id=size_id)
-        filters['productsize__size__id'] = size_id
-        filters_applied += f"Talla: {size.name}. "
-    if brand_id:
-        brand = brands.get(id=brand_id)
-        filters['brand__id'] = brand_id
-        filters_applied += f"Marca: {brand.name}. "
+def updatePayment(request, user_id):
+    customer = get_object_or_404(Customer, pk=user_id)
+    return render(request, 'store/update_payment.html', {'customer': customer})
 
-    products = Product.objects.filter(name__icontains=query, **filters)
+def user_has_perm(user):
+    if not user.is_staff:
+        return False
+    return True
 
-    context = {
-        'products': products, 
-        'query': query, 
-        'colors': colors, 
-        'sizes': sizes, 
-        'brands': brands, 
-        'color_id': color_id, 
-        'size_id': size_id, 
-        'brand_id': brand_id,
-        'filters_applied': filters_applied,
-    }
+@login_required
+@user_passes_test(user_has_perm, redirect_field_name=None)
+def customer_list(request):
+    customers = Customer.objects.all()
+    return render(request, 'store/customer_list.html', {'customers': customers})
 
-    return render(request, 'store/search.html', context)
+@login_required
+@user_passes_test(user_has_perm, redirect_field_name=None)
+def customer_create(request):
+    if request.method == 'POST':
+        form = CustomerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('customer_list')
+    else:
+        form = CustomerForm()
+    return render(request, 'store/customer_form.html', {'form': form})
+
+@login_required
+@user_passes_test(user_has_perm, redirect_field_name=None)
+def customer_update(request, customer_id):
+    customer = get_object_or_404(Customer, pk=customer_id)
+    if request.method == 'POST':
+        form = CustomerForm(request.POST, instance=customer)
+        if form.is_valid():
+            form.save()
+            return redirect('customer_list')
+    else:
+        form = CustomerForm(instance=customer)
+    return render(request, 'store/customer_form.html', {'form': form})
+
+@login_required
+@user_passes_test(user_has_perm, redirect_field_name=None)
+def customer_delete(request, customer_id):
+    customer = get_object_or_404(Customer, pk=customer_id)
+    customer.delete()
+    return redirect('customer_list')

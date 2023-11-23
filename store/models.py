@@ -164,5 +164,3 @@ class ShippingAddress(models.Model):
         verbose_name = 'Shipping address'
         verbose_name_plural = 'Shipping addresses'
         ordering = ['-date_added']
-
-

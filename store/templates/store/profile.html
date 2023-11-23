@@ -1,0 +1,14 @@
+{% extends 'store/main.html' %}
+{% load static %}
+
+{% block content %}
+  <h2>Perfil de {{ customer.name }}</h2>
+  <ul>
+    <li>Email: {{ customer.email }}</li>
+  </ul>
+
+  <a href="{% url 'update_delivery' customer.id %}" class="btn btn-outline-secondary add-btn">Modificar datos de entrega</a>
+  <br>
+  <br>
+  <a href="{% url 'update_payment' customer.id %}" class="btn btn-outline-secondary add-btn">Modificar forma de pago</a>
+{% endblock content %}

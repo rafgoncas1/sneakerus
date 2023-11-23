@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.validators import validate_email
+from .models import Customer
 
 class LoginForm(forms.Form):
     email = forms.EmailField(label='Correo Electrónico', required=True)
@@ -43,4 +44,9 @@ class RegisterForm(forms.Form):
             self.cleaned_data.get('password')
         )
         return user
+    
+class CustomerForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['name', 'email']
 
