@@ -1,0 +1,45 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+    <div class="container mt-5">
+        <h2 class="mb-4">Estado del Pedido - {{ order.tracking_id }}</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Información del Pedido</h5>
+                        <p class="card-text">Estado: {{ order.status }}</p>
+                        <p class="card-text">Fecha de Pedido: {{ order.date_ordered|date:"F d, Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Productos en el Pedido</h5>
+                        <ul class="list-group">
+                            {% for item in order_items %}
+                                <li class="list-group-item">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            {% if item.product.image %}
+                                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-fluid">
+                                            {% else %}
+                                                <img src="{% static 'images/placeholder.png' %}" alt="Placeholder" class="img-fluid">
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-9">
+                                            <p>{{ item.product.name }} - Cantidad: {{ item.quantity }} - Precio por unidad: {{ item.product.price|floatformat:2 }}€</p>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <p class="mt-3">Costo Total del Pedido: {{ total_cost|floatformat:2 }}€</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

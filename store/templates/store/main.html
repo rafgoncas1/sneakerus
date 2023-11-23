@@ -22,8 +22,13 @@
                   <a class="nav-link active" aria-current="page" href="{% url 'store' %}">Tienda</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Link</a>
+                  <a class="nav-link" href="/tracking">Seguimiento</a>
                 </li>
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/orders">Pedidos</a>
+                    </li>
+                    {% endif %}
                 <li class="nav-item dropdown">
                   <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Dropdown

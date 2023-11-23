@@ -1,0 +1,27 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+    <div class="container mt-5">
+        <h2 class="mb-4">Mis Pedidos</h2>
+        <div class="row">
+            {% if user_orders %}
+                {% for order in user_orders %}
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Pedido #{{ order.id }}</h5>
+                                <p class="card-text">Fecha de Pedido: {{ order.date_ordered|date:"F d, Y H:i" }}</p>
+                                <p class="card-text">Estado: {{ order.status }}</p>
+                                <a href="{% url 'track_order' tracking_id=order.tracking_id %}" class="btn btn-primary">Seguir Pedido</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <p class="text-muted">No tienes pedidos aún.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}
