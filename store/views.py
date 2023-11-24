@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import *
-from .forms import LoginForm, RegisterForm, CustomerForm
+from .forms import LoginForm, PaymentDataForm, RegisterForm, CustomerForm, ShippingAddressForm
 from django.contrib.auth import login, logout
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate
@@ -122,18 +122,35 @@ def auth_logout(request):
     logout(request)
     return redirect('store')
 
-def profile(request, user_id):
-    customer = get_object_or_404(Customer, pk=user_id)
+def profile(request, customer_id):
+    customer = Customer.objects.get(user=request.user)
+    customer_id = customer.id
     shipping_address = ShippingAddress.objects.filter(customer=customer)
-    return render(request, 'store/profile.html', {'customer': customer, 'shipping_address': shipping_address})
+    return render(request, 'store/profile.html', {'customer': customer, 'shipping_address': shipping_address, 'customer_id': customer_id})
 
-def updateDelivery(request, user_id):
-    customer = get_object_or_404(Customer, pk=user_id)
-    return render(request, 'store/update_delivery.html', {'customer': customer})
+def create_update_delivery(request):
+    customer = request.user.customer
+    shipping_address = customer.shippingaddress_set.last()
+    form = ShippingAddressForm(request.POST or None, instance=shipping_address)
+    if request.method == 'POST':
+        if form.is_valid():
+            new_shipping_address = form.save(commit=False)
+            new_shipping_address.customer = customer
+            new_shipping_address.save()
+            return redirect('store')
+    return render(request, 'store/delivery_form.html', {'form': form, 'customer': customer})
 
-def updatePayment(request, user_id):
-    customer = get_object_or_404(Customer, pk=user_id)
-    return render(request, 'store/update_payment.html', {'customer': customer})
+def create_update_payment(request):
+    customer = request.user.customer
+    payment_data = customer.paymentdata_set.last()
+    form = PaymentDataForm(request.POST or None, instance=payment_data)
+    if request.method == 'POST':
+        if form.is_valid():
+            new_payment_data = form.save(commit=False)
+            new_payment_data.customer = customer
+            new_payment_data.save()
+            return redirect('store')
+    return render(request, 'store/payment_form.html', {'form': form, 'customer': customer})
 
 def user_has_perm(user):
     if not user.is_staff:

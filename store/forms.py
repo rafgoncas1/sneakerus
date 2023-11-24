@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.validators import validate_email
-from .models import Customer
+from .models import Customer, PaymentData, ShippingAddress
 
 class LoginForm(forms.Form):
     email = forms.EmailField(label='Correo Electrónico', required=True)
@@ -49,4 +49,14 @@ class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
         fields = ['name', 'email']
+
+class ShippingAddressForm(forms.ModelForm):
+    class Meta:
+        model = ShippingAddress
+        fields = ['address', 'city', 'state', 'zipcode', 'country']
+
+class PaymentDataForm(forms.ModelForm):
+    class Meta:
+        model = PaymentData
+        fields = ['cardholder_name', 'card_number', 'expiry_date', 'cvv']
 

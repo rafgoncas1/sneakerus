@@ -149,12 +149,12 @@ class OrderItem(models.Model):
 
 class ShippingAddress(models.Model):
     customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
-    order = models.ForeignKey(Order, null=True, on_delete = models.SET_NULL)
+    order = models.ForeignKey(Order, null=True, blank=True, on_delete = models.SET_NULL)
     address = models.CharField(max_length=200 , null=True)
     city = models.CharField(max_length=200 , null=True)
     state = models.CharField(max_length=200 , null=True)
     zipcode = models.CharField(max_length=200 , null=True)
-    coutry = models.CharField(max_length=200 , null=True)
+    country = models.CharField(max_length=200 , null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
@@ -164,3 +164,17 @@ class ShippingAddress(models.Model):
         verbose_name = 'Shipping address'
         verbose_name_plural = 'Shipping addresses'
         ordering = ['-date_added']
+
+class PaymentData(models.Model):
+    customer = models.ForeignKey(Customer, null=True, on_delete=models.SET_NULL)
+    cardholder_name = models.CharField(max_length=100)
+    card_number = models.CharField(max_length=16)
+    expiry_date = models.DateField()
+    cvv = models.CharField(max_length=3)
+
+    def __str__(self):
+        return self.cardholder_name
+
+    class Meta:
+        verbose_name = 'Payment data'
+        verbose_name_plural = 'Payment data'
