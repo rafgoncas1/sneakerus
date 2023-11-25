@@ -124,8 +124,6 @@ def productDetails(request, producto_id):
         
     producto = get_object_or_404(Product, pk=producto_id)
     colors = producto.productcolor_set.all()
-    sizes = producto.productsize_set.all()
-    return render(request, 'store/detail_product.html', {'product': producto, 'colors': colors, 'sizes': sizes})
 
     # sizes ordered by name
     sizes = producto.productsize_set.all().order_by('size__name')
