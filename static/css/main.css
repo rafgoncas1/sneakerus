@@ -152,6 +152,113 @@ h1,h2,h3,h4,h5,h6{
     color: white;
 }
 
+#color, #talla, #marca {
+    background-color: #f8f9fa;
+    color: #495057;
+    border: 1px solid #ced4da;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+#color:focus, #talla:focus, #marca:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 .2rem rgba(0,123,255,.25);
+}
+
+.filter-submit {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 8px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    transition-duration: 0.4s;
+    border-radius: 12px;
+}
+
+.filter-submit:hover {
+    color: black; 
+}
+
+.btn-secondary {
+		border: none;
+		padding: 8px 20px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 14px;
+		margin: 4px 2px;
+		cursor: pointer;
+		transition-duration: 0.4s;
+		border-radius: 12px;
+}
+
+.btn-secondary:hover {
+    color: black; 
+}
+
+.btn-danger{
+		border: none;
+		padding: 8px 20px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 14px;
+		margin: 4px 2px;
+		cursor: pointer;
+		transition-duration: 0.4s;
+		border-radius: 12px;
+}
+
+.btn-danger:hover {
+    color: black; 
+}
+
+.mb-3{
+		border: none;
+		padding: 8px 20px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 14px;
+		margin: 4px 2px;
+		cursor: pointer;
+		transition-duration: 0.4s;
+		border-radius: 12px;
+}
+
+.mb-3:hover {
+    color: black; 
+}
+
+.btn-primary{
+		border: none;
+		padding: 8px 20px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 14px;
+		margin: 4px 2px;
+		cursor: pointer;
+		transition-duration: 0.4s;
+		border-radius: 12px;
+}
+
+.btn-primary:hover {
+		color: black; 
+
 .size-btn {
 	margin: 0px;
+}
+}
+.errorlist {
+    color: red;
 }

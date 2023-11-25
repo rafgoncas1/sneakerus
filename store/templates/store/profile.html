@@ -1,0 +1,35 @@
+{% extends 'store/main.html' %}
+{% load static %}
+
+{% block content %}
+  <h2>Perfil de {{ customer.name }}</h2>
+  <ul>
+    <li>Email: {{ customer.email }}</li>
+  </ul>
+
+  {% if user.customer.shippingaddress_set.exists %}
+    <h3>Datos de entrega:</h3>
+    <ul>
+      <li>Dirección: {{ user.customer.shippingaddress_set.last.address }}</li>
+      <li>Ciudad: {{ user.customer.shippingaddress_set.last.city }}</li>
+      <li>Estado: {{ user.customer.shippingaddress_set.last.state }}</li>
+      <li>Código postal: {{ user.customer.shippingaddress_set.last.zipcode }}</li>
+      <li>País: {{ user.customer.shippingaddress_set.last.country }}</li>
+    </ul>
+    <a href="{% url 'create_update_delivery' %}" class="btn btn-outline-secondary add-btn">Modificar datos de entrega</a>
+  {% else %}
+    <a href="{% url 'create_update_delivery' %}" class="btn btn-outline-secondary add-btn">Establecer datos de entrega</a>
+  {% endif %}
+  <br>
+  <br>
+  {% if user.customer.paymentdata_set.exists %}
+    <h3>Datos de pago:</h3>
+    <ul>
+      <li>Nombre del titular: {{ user.customer.paymentdata_set.last.cardholder_name }}</li>
+      <li>Número de tarjeta: {{ user.customer.paymentdata_set.last.card_number }}</li>
+      <li>Fecha de vencimiento: {{ user.customer.paymentdata_set.last.expiry_date }}</li>
+    </ul>
+    <a href="{% url 'create_update_payment' %}" class="btn btn-outline-secondary add-btn">Modificar forma de pago</a>
+  {% else %}
+    <a href="{% url 'create_update_payment' %}" class="btn btn-outline-secondary add-btn">Establecer forma de pago</a>
+  {% endif %}{% endblock content %}

@@ -1,0 +1,10 @@
+{% extends 'store/main.html' %}
+
+{% block content %}
+  <h2>{% if form.instance.pk %}Modificar{% else %}Crear{% endif %} Cliente</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Guardar</button>
+  </form>
+{% endblock %}

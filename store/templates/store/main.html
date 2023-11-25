@@ -59,17 +59,39 @@
                   </ul>
                 </li>
               </ul>
-              <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+              <form class="d-flex" action="/" method="get" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
               </form>
               <a href="{% url 'cart' %}">
                   <img id="cart-icon" src="{% static 'images/cart.png' %}">
               </a>
               <p id="cart-total">{{ cartItems }}</p>
               {% if not user.is_authenticated %}
-                <a href="{% url 'login' %}"class="btn btn-warning ms-lg-3 rounded-2">Iniciar Sesión</a>
+                  <a href="{% url 'login' %}"class="btn btn-warning ms-lg-3 rounded-2">Iniciar Sesión</a>
               {% else %}
-                <a href="{% url 'logout' %}"class="btn btn-outline-info ms-lg-3 rounded-2">{{user.email}}</a>
+                  <div class="dropdown">
+                      <button class="btn btn-outline-info dropdown-toggle ms-lg-3 rounded-2" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                          {{user.email}}
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                          <li><a class="dropdown-item" href="{% url 'profile' user.id %}">Ver perfil</a></li>
+                          {% if user.is_staff %}
+                              <li><a class="dropdown-item" href="{% url 'customer_list' %}">Lista de clientes</a></li>
+                          {% endif %}
+                          {% if user.customer.shippingaddress_set.exists %}
+                              <li><a class="dropdown-item" href="{% url 'create_update_delivery' %}">Modificar datos de entrega</a></li>
+                          {% else %}
+                              <li><a class="dropdown-item" href="{% url 'create_update_delivery' %}">Establecer datos de entrega</a></li>
+                          {% endif %}
+                          {% if user.customer.paymentdata_set.exists %}
+                              <li><a class="dropdown-item" href="{% url 'create_update_payment' %}">Modificar forma de pago</a></li>
+                          {% else %}
+                              <li><a class="dropdown-item" href="{% url 'create_update_payment' %}">Establecer forma de pago</a></li>
+                          {% endif %}
+                          <li><hr class="dropdown-divider"></li>
+                          <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
+                      </ul>
+                  </div>
               {% endif %}
             </div>
           </div>

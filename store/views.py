@@ -1,16 +1,43 @@
+from django.shortcuts import get_object_or_404, render, redirect
+
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from .models import *
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, PaymentDataForm, RegisterForm, CustomerForm, ShippingAddressForm
 from django.contrib.auth import login, logout
-from django.shortcuts import redirect
 from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
 from django.http import JsonResponse
 import json
-from django.contrib.auth.decorators import login_required
+
+
 
 def store(request):
+    query = request.GET.get('q', '')
+
+    colors = Color.objects.all()
+    sizes = Size.objects.all()
+    brands = Brand.objects.all()
+
+    color_id = request.GET.get('color', '')
+    size_id = request.GET.get('talla', '')
+    brand_id = request.GET.get('marca', '')
+
+    filters = {}
+    filters_applied = ""
+    if color_id:
+        color = colors.get(id=color_id)
+        filters['productcolor__color__id'] = color_id
+        filters_applied += f"Color: {color.name}. "
+    if size_id:
+        size = sizes.get(id=size_id)
+        filters['productsize__size__id'] = size_id
+        filters_applied += f"Talla: {size.name}. "
+    if brand_id:
+        brand = brands.get(id=brand_id)
+        filters['brand__id'] = brand_id
+        filters_applied += f"Marca: {brand.name}. "
     if request.user.is_authenticated:
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
@@ -20,9 +47,20 @@ def store(request):
         items = []
         order = {'get_cart_total': 0, 'get_cart_items': 0}
         cartItems = order['get_cart_items']
+    products = Product.objects.filter(name__icontains=query, **filters)
 
-    products = Product.objects.all()
-    context = {'products': products, 'cartItems': cartItems}
+    context = {
+        'products': products, 
+        'query': query, 
+        'colors': colors, 
+        'sizes': sizes, 
+        'brands': brands, 
+        'color_id': color_id, 
+        'size_id': size_id, 
+        'brand_id': brand_id,
+        'filters_applied': filters_applied,
+        'cartItems': cartItems,
+    }
     return render(request, 'store/store.html', context)
 
 def cart(request):
@@ -80,9 +118,11 @@ def productDetails(request, producto_id):
         
     producto = get_object_or_404(Product, pk=producto_id)
     colors = producto.productcolor_set.all()
+
     # sizes ordered by name
     sizes = producto.productsize_set.all().order_by('size__name')
     return render(request, 'store/product.html', {'product': producto, 'colors': colors, 'sizes': sizes, 'cartItems': cartItems})
+
 
 def auth_login(request):
     if request.method == 'POST':
@@ -127,6 +167,81 @@ def register(request):
 def auth_logout(request):
     logout(request)
     return redirect('store')
+
+
+def profile(request, customer_id):
+    customer = Customer.objects.get(user=request.user)
+    customer_id = customer.id
+    shipping_address = ShippingAddress.objects.filter(customer=customer)
+    return render(request, 'store/profile.html', {'customer': customer, 'shipping_address': shipping_address, 'customer_id': customer_id})
+
+def create_update_delivery(request):
+    customer = request.user.customer
+    shipping_address = customer.shippingaddress_set.last()
+    form = ShippingAddressForm(request.POST or None, instance=shipping_address)
+    if request.method == 'POST':
+        if form.is_valid():
+            new_shipping_address = form.save(commit=False)
+            new_shipping_address.customer = customer
+            new_shipping_address.save()
+            return redirect('store')
+    return render(request, 'store/delivery_form.html', {'form': form, 'customer': customer})
+
+def create_update_payment(request):
+    customer = request.user.customer
+    payment_data = customer.paymentdata_set.last()
+    form = PaymentDataForm(request.POST or None, instance=payment_data)
+    if request.method == 'POST':
+        if form.is_valid():
+            new_payment_data = form.save(commit=False)
+            new_payment_data.customer = customer
+            new_payment_data.save()
+            return redirect('store')
+    return render(request, 'store/payment_form.html', {'form': form, 'customer': customer})
+
+def user_has_perm(user):
+    if not user.is_staff:
+        return False
+    return True
+
+@login_required
+@user_passes_test(user_has_perm, redirect_field_name=None)
+def customer_list(request):
+    customers = Customer.objects.all()
+    return render(request, 'store/customer_list.html', {'customers': customers})
+
+@login_required
+@user_passes_test(user_has_perm, redirect_field_name=None)
+def customer_create(request):
+    if request.method == 'POST':
+        form = CustomerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('customer_list')
+    else:
+        form = CustomerForm()
+    return render(request, 'store/customer_form.html', {'form': form})
+
+@login_required
+@user_passes_test(user_has_perm, redirect_field_name=None)
+def customer_update(request, customer_id):
+    customer = get_object_or_404(Customer, pk=customer_id)
+    if request.method == 'POST':
+        form = CustomerForm(request.POST, instance=customer)
+        if form.is_valid():
+            form.save()
+            return redirect('customer_list')
+    else:
+        form = CustomerForm(instance=customer)
+    return render(request, 'store/customer_form.html', {'form': form})
+
+@login_required
+@user_passes_test(user_has_perm, redirect_field_name=None)
+def customer_delete(request, customer_id):
+    customer = get_object_or_404(Customer, pk=customer_id)
+    customer.delete()
+    return redirect('customer_list')
+
   
 def updateItem(request):
     data = json.loads(request.body)
@@ -191,3 +306,4 @@ def view_orders(request):
     user_orders = Order.objects.filter(customer=request.user.customer)
     context = {'user_orders': user_orders}
     return render(request, 'store/view_orders.html', context)
+
