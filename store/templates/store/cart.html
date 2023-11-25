@@ -10,8 +10,8 @@
             <br>
             <table class="table">
                 <tr>
-                    <th><h5>Productos: <strong>1</strong></h5></th>
-                    <th><h5>Total:<strong> 40€</strong></h5></th>
+                    <th><h5>Productos: <strong>{{order.get_cart_items}}</strong></h5></th>
+                    <th><h5>Total:<strong> {{order.get_cart_total|floatformat:2}}€</strong></h5></th>
                     <th>
                         <a  style="float:right; margin:5px;" class="btn btn-success rounded-3" href="{% url 'checkout' %}">Finalizar Compra</a>
                     </th>
@@ -29,21 +29,36 @@
                 <div style="flex:1"><strong>Total</strong></div>
             </div>
             
+            {% for item in items %}
             <div class="cart-row">
-                <div style="flex:2"><img class="row-image" src="{% static 'images/placeholder.png' %}"></div>
-                <div style="flex:2"><p>Producto 1</p></div>
-                <div style="flex:1"><p>20€</p></div>
-                <div style="flex:1">
-                    <p class="quantity">2</p>
-                    <div class="quantity">
-                        <img class="chg-quantity" src="{% static  'images/arrow-up.png' %}">
                 
-                        <img class="chg-quantity" src="{% static  'images/arrow-down.png' %}">
+                <div style="flex:2">
+                    {% if item.product_size.product.image %}
+                    <img class="row-image" src="{{ item.product_size.product.image.url }}">
+                    {% else %}
+                    <img class="row-image" src="{% static  'images/placeholder.png' %}">
+                    {% endif %}
+                </div>
+                
+                <div style="flex:2"><p>{{ item.product_size.product.name }}</p></div>
+                <div style="flex:1"><p>{{item.product_size.product.price|floatformat:2}}€</p></div>
+                <div style="flex:1">
+                    <p class="quantity">{{item.quantity}}</p>
+                    <div class="quantity">
+                        
+                        <img data-product="{{item.product_size.product.id}}" data-size="{{item.product_size.size.name}}" 
+                        class="chg-quantity update-cart"  
+                        data-action="add" src="{% static  'images/arrow-up.png' %}">
+                
+                        <img data-product="{{item.product_size.product.id}}" data-size="{{item.product_size.size.name}}" data-action="remove" 
+                        class="chg-quantity update-cart" src="{% static  'images/arrow-down.png' %}">
                     </div>
                 </div>
-                <div style="flex:1"><p>40€</p></div>
+                <div style="flex:1"><p>{{item.get_total|floatformat:2}}€</p></div>
             </div>
+            {% endfor %}
 		</div>
 	</div>
 </div>
+<script type="text/javascript" src="{% static 'js/cart.js' %}"></script>
 {% endblock content %}
