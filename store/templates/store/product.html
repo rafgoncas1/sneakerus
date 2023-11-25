@@ -14,7 +14,7 @@
       <div class="col-md-6">
         <h2>{{ product.name }}</h2>
         <h4 v-if="{{product.brand}}"> {{product.brand}}</h4>
-        <p><strong>Precio:</strong> ${{ product.price|floatformat:2 }}</p>
+        <p><strong>Precio:</strong> {{ product.price|floatformat:2 }} €</p>
         <p><strong>Descripción:</strong> {{ product.description }}</p>
         <p><strong>Detalles:</strong> {{product.details}}</p>
         <p><strong>
