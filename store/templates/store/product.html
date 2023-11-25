@@ -22,28 +22,16 @@
             <span >{{ color }}</span> /
           {% endfor %}
         </strong></p>
-        <p><strong>
+        <div id="sizes-container" style="padding-bottom: 10px">
           {% for size in sizes %}
-            <button class="size-btn">{{ size }}</button>
+            <button class="size-btn" data-quantity="{{ size.stock }}">{{ size }}</button>
           {% endfor %}
-        </strong></p>
+        </div>
         
-        <button class="btn btn-outline-secondary add-btn">Añadir al Carrito</button>
+        <button data-product="{{product.id}}" data-action="add" class="btn btn-outline-success add-btn update-cart" disabled>Añadir al Carrito</button>
       </div>
     </div>
   </div>
-
-
-  <script>
-    var sizeButtons = document.getElementsByClassName('size-btn');
-    for (var i = 0; i < sizeButtons.length; i++) {
-        sizeButtons[i].addEventListener('click', function() {
-            for (var j = 0; j < sizeButtons.length; j++) {
-                sizeButtons[j].classList.remove('selected');
-            }
-            this.classList.add('selected');
-        });
-    }
-</script>
-
+  <script type="text/javascript" src="{% static 'js/product.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/cart.js' %}"></script>
 {% endblock content %}

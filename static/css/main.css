@@ -57,6 +57,7 @@ h1,h2,h3,h4,h5,h6{
 
 .row-image{
 	width: 100px;
+	height: 56px;
 }
 
 .form-field{
@@ -253,4 +254,7 @@ h1,h2,h3,h4,h5,h6{
 
 .btn-primary:hover {
 		color: black; 
+
+.size-btn {
+	margin: 0px;
 }

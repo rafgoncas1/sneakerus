@@ -45,7 +45,7 @@
     {% endif %}
     {% for product in products %}
     <div class="col-lg-4">
-        <a href="{% url 'detalle_producto' product.id %}">
+        <a href="{% url 'details' product.id %}">
             {% if product.image %}
                 <img class="thumbnail" src="{{ product.image.url }}">
             {% else %}
@@ -56,8 +56,9 @@
             <h6><strong>{{product.name}}</strong></h6>
             <hr>
 
-            <button class="btn btn-outline-secondary add-btn">Añadir</button>
-            <a class="btn btn-outline-success" href="#">Ver Carrito</a>
+            <a href="{% url 'details' product.id %}">
+            <button class="btn btn-outline-secondary add-btn">Ver producto</button>
+            </a>
             <h4 style="display: inline-block; float: right;"><strong>
                     ${{product.price|floatformat:2}}
                 </strong></h4>
