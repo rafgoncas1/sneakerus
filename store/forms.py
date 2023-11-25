@@ -52,7 +52,8 @@ class CustomerForm(forms.ModelForm):
         fields = ['name', 'email']
 
 class ShippingAddressForm(forms.ModelForm):
-    zipcode = forms.CharField(validators=[RegexValidator(r'^\d{5}$', 'El código postal debe contener exactamente 5 dígitos.')])
+    zipcode = forms.CharField(label='Código Postal',
+    validators=[RegexValidator(r'^\d{5}$', 'El código postal debe contener exactamente 5 dígitos.')])
     class Meta:
         model = ShippingAddress
         fields = ['address', 'city', 'state', 'zipcode', 'country']
@@ -60,22 +61,24 @@ class ShippingAddressForm(forms.ModelForm):
             'address': 'Dirección',
             'city': 'Ciudad',
             'state': 'Comunidad Autónoma',
-            'zipcode': 'Código Postal',
             'country': 'País',
         }
 
 class PaymentDataForm(forms.ModelForm):
-    expiry_date = forms.DateField()
-    cvv = forms.CharField(validators=[RegexValidator(r'^\d{3}$', 'El CVV debe contener exactamente 3 dígitos.')])
-    card_number = forms.CharField(validators=[RegexValidator(r'^\d{16}$', 'El número de tarjeta debe contener exactamente 16 dígitos.')])
+    expiry_date = forms.DateField(
+        label='Fecha de Expiracion')
+    cvv = forms.CharField(
+        label='CVV',
+        validators=[RegexValidator(r'^\d{3}$', 'El CVV debe contener exactamente 3 dígitos.')])
+    card_number = forms.CharField(
+        label='Número de tarjeta',
+        validators=[RegexValidator(r'^\d{16}$', 'El número de tarjeta debe contener exactamente 16 dígitos.')])
+
     class Meta:
         model = PaymentData
         fields = ['cardholder_name', 'card_number', 'expiry_date', 'cvv']
         labels = {
-            'cardholder_name ': 'Nombre del Titular',
-            'card_number': 'Numero de Tarjeta',
-            'expiry_date': 'Fecha de Expiración',
-            'cvv': 'CVV',
+            'cardholder_name': 'Nombre del Titular',
         }
     def __init__(self, *args, **kwargs):
         super(PaymentDataForm, self).__init__(*args, **kwargs)

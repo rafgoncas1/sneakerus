@@ -38,7 +38,15 @@ def store(request):
         brand = brands.get(id=brand_id)
         filters['brand__id'] = brand_id
         filters_applied += f"Marca: {brand.name}. "
-
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
     products = Product.objects.filter(name__icontains=query, **filters)
 
     context = {
@@ -51,22 +59,8 @@ def store(request):
         'size_id': size_id, 
         'brand_id': brand_id,
         'filters_applied': filters_applied,
+        'cartItems': cartItems,
     }
-
-
-def store(request):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
-
-    products = Product.objects.all()
-    context = {'products': products, 'cartItems': cartItems}
     return render(request, 'store/store.html', context)
 
 def cart(request):
