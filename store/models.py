@@ -59,14 +59,14 @@ class SneakerUser(AbstractBaseUser, PermissionsMixin):
 
 class Customer(models.Model):
     user = models.OneToOneField(SneakerUser, null=True, blank=True, on_delete = models.CASCADE)
-    name = models.CharField(max_length=200 , null=True)
-    email = models.CharField(max_length=200 , null=True)
+    name = models.CharField(max_length=30 , null=True)
+    email = models.CharField(max_length=60 , null=True)
 
     def __str__(self):
         return self.name
 
 class Brand(models.Model):
-    name = models.CharField(max_length=200 , null=False, unique=True, blank=False)
+    name = models.CharField(max_length=30 , null=False, unique=True, blank=False)
     
     def __str__(self):
         return self.name
@@ -110,12 +110,12 @@ class ProductSize(models.Model):
         ordering = ['product', 'size']
 
 class Product(models.Model):
-    name = models.CharField(max_length=200 , null=True)
+    name = models.CharField(max_length=50 , null=True)
     price = models.FloatField()
     brand = models.ForeignKey(Brand, null=True, on_delete = models.SET_NULL)
     image = models.ImageField(null=True, blank=True)
     description = models.CharField(max_length=200 , null=True)
-    details = models.CharField(max_length=200 , null=True)
+    details = models.CharField(max_length=500 , null=True)
     
 
     
@@ -137,7 +137,7 @@ class Order(models.Model):
     customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
     date_ordered = models.DateTimeField(auto_now_add=True)
     status = models.ForeignKey(Status, null=True, on_delete = models.SET_NULL)
-    tracking_id=models.CharField(max_length=200 , null=True, unique=True)
+    tracking_id=models.CharField(max_length=30 , null=True, unique=True)
 
     def __str__(self):
         return str(self.id)
@@ -165,11 +165,11 @@ class OrderItem(models.Model):
 class ShippingAddress(models.Model):
     customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
     order = models.ForeignKey(Order, null=True, blank=True, on_delete = models.SET_NULL)
-    address = models.CharField(max_length=200 , null=True)
-    city = models.CharField(max_length=200 , null=True)
-    state = models.CharField(max_length=200 , null=True)
-    zipcode = models.CharField(max_length=200 , null=True)
-    country = models.CharField(max_length=200 , null=True)
+    address = models.CharField(max_length=60 , null=True)
+    city = models.CharField(max_length=30 , null=True)
+    state = models.CharField(max_length=30 , null=True)
+    zipcode = models.CharField(max_length=10 , null=True)
+    country = models.CharField(max_length=30 , null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
