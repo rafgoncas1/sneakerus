@@ -137,14 +137,10 @@ class Order(models.Model):
     customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
     date_ordered = models.DateTimeField(auto_now_add=True)
     status = models.ForeignKey(Status, null=True, on_delete = models.SET_NULL)
-    tracking_id=models.CharField(max_length=200 , null=True)
+    tracking_id=models.CharField(max_length=200 , null=True, unique=True)
 
     def __str__(self):
         return str(self.id)
-    def calculate_total_price(self):
-        order_items = OrderItem.objects.filter(order=self)
-        total_price = sum(item.quantity * item.product.price for item in order_items)
-        return total_price
     
     @property
     def get_cart_items(self):

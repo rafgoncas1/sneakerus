@@ -170,12 +170,30 @@ def auth_logout(request):
 
 
 def profile(request, customer_id):
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
     customer = Customer.objects.get(user=request.user)
     customer_id = customer.id
     shipping_address = ShippingAddress.objects.filter(customer=customer)
-    return render(request, 'store/profile.html', {'customer': customer, 'shipping_address': shipping_address, 'customer_id': customer_id})
+    return render(request, 'store/profile.html', {'customer': customer, 'shipping_address': shipping_address, 'customer_id': customer_id, 'cartItems': cartItems})
 
 def create_update_delivery(request):
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
     customer = request.user.customer
     shipping_address = customer.shippingaddress_set.last()
     form = ShippingAddressForm(request.POST or None, instance=shipping_address)
@@ -185,9 +203,18 @@ def create_update_delivery(request):
             new_shipping_address.customer = customer
             new_shipping_address.save()
             return redirect('store')
-    return render(request, 'store/delivery_form.html', {'form': form, 'customer': customer})
+    return render(request, 'store/delivery_form.html', {'form': form, 'customer': customer, 'cartItems': cartItems})
 
 def create_update_payment(request):
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
     customer = request.user.customer
     payment_data = customer.paymentdata_set.last()
     form = PaymentDataForm(request.POST or None, instance=payment_data)
@@ -197,7 +224,7 @@ def create_update_payment(request):
             new_payment_data.customer = customer
             new_payment_data.save()
             return redirect('store')
-    return render(request, 'store/payment_form.html', {'form': form, 'customer': customer})
+    return render(request, 'store/payment_form.html', {'form': form, 'customer': customer, 'cartItems': cartItems})
 
 def user_has_perm(user):
     if not user.is_staff:
@@ -278,24 +305,45 @@ def updateItem(request):
     return JsonResponse({"success": "Order updated successfully"}, safe=False)
 
 def track_orders(request):
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
     if request.method == 'POST':
         tracking_id = request.POST.get('tracking_id')
         if tracking_id:
-            return HttpResponseRedirect(reverse('tracking', args=[tracking_id]))
+            tracking = Order.objects.exclude(status=Status.objects.get(name='No realizado')).filter(tracking_id=tracking_id)
+            if tracking:
+                return HttpResponseRedirect("/tracking/" + tracking_id)
+            else:
+                return render(request, 'store/track_order.html', {'cartItems': cartItems})
         else:
-            return render(request, 'store/track_order.html', {'error_message': 'Por favor, proporciona un ID de seguimiento.'})
-    return render(request, 'store/track_order.html')
+            return render(request, 'store/track_order.html', {'error_message': 'Por favor, proporciona un ID de seguimiento.', 'cartItems': cartItems})
+    return render(request, 'store/track_order.html', {'cartItems': cartItems})
 
 def track_order(request, tracking_id):
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
     try:
         order = get_object_or_404(Order, tracking_id=tracking_id)
         order_items = OrderItem.objects.filter(order=order)
 
         # Calcular el costo total del pedido
-        total_cost = order.calculate_total_price()
-        print(total_cost)
+        total_cost = order.get_cart_total
 
-        context = {'order': order, 'order_items': order_items, 'total_cost': total_cost}
+        context = {'order': order, 'order_items': order_items, 'total_cost': total_cost, 'cartItems': cartItems}
     except Order.DoesNotExist:
         return render(request, 'store/track_order.html', {'error_message': f'No existe un pedido con ID de seguimiento {tracking_id}.'})
 
@@ -303,7 +351,17 @@ def track_order(request, tracking_id):
 
 @login_required
 def view_orders(request):
-    user_orders = Order.objects.filter(customer=request.user.customer)
-    context = {'user_orders': user_orders}
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
+    # orders with status distinct from 'No realizado'
+    user_orders = Order.objects.exclude(status=Status.objects.get(name='No realizado')).order_by('-date_ordered')
+    context = {'user_orders': user_orders, 'cartItems': cartItems}
     return render(request, 'store/view_orders.html', context)
 

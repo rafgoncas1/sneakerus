@@ -23,14 +23,15 @@
                                 <li class="list-group-item">
                                     <div class="row">
                                         <div class="col-md-3">
-                                            {% if item.product.image %}
-                                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-fluid">
+                                            {% if item.product_size.product.image %}
+                                                <img src="{{ item.product_size.product.image.url }}" alt="{{ item.product_size.product.name }}" class="img-fluid">
                                             {% else %}
                                                 <img src="{% static 'images/placeholder.png' %}" alt="Placeholder" class="img-fluid">
                                             {% endif %}
                                         </div>
                                         <div class="col-md-9">
-                                            <p>{{ item.product.name }} - Cantidad: {{ item.quantity }} - Precio por unidad: {{ item.product.price|floatformat:2 }}€</p>
+                                                <b>{{ item.product_size.product.name }}</b>
+                                                <p>Cantidad: {{ item.quantity }} x {{ item.product_size.product.price|floatformat:2 }}€</p> 
                                         </div>
                                     </div>
                                 </li>
