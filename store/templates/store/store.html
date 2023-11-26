@@ -2,9 +2,50 @@
 {% load static %}
 {% block content %}
 <div class="row">
+    {% if query %}
+        <h2>Tu búsqueda de: "{{ query }}"</h2>
+    {% else %}
+        <h2>Todos los productos:</h2>
+    {% endif %}
+    
+    <form action="/" method="get">
+        <input type="hidden" name="q" value="{{ query }}">
+        <select id="color" name="color">
+            <option value="">Color</option>
+            {% for color in colors %}
+                <option value="{{ color.id }}">{{ color.name }}</option>
+            {% endfor %}
+        </select>
+        <select id="talla" name="talla">
+            <option value="">Talla</option>
+            {% for size in sizes %}
+                <option value="{{ size.id }}">{{ size.name }}</option>
+            {% endfor %}
+        </select>
+        <select id="marca" name="marca">
+            <option value="">Marca</option>
+            {% for brand in brands %}
+                <option value="{{ brand.id }}">{{ brand.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Aplicar filtros" class="filter-submit">
+        {% if filters_applied %}
+        <a href="/" class="btn btn-danger">Borrar filtros</a>
+        {% endif %}
+    </form>
+
+    <p>{{ filters_applied }}</p>
+
+    {% if products|length == 0 %}
+        <p>No se encontraron productos.</p>
+    {% elif products|length > 1 %}
+        <p>[{{ products|length }} resultados]</p>
+    {% else %}
+        <p>[{{ products|length }} resultado]</p>
+    {% endif %}
     {% for product in products %}
     <div class="col-lg-4">
-        <a href="{% url 'detalle_producto' product.id %}">
+        <a href="{% url 'details' product.id %}">
             {% if product.image %}
                 <img class="thumbnail" src="{{ product.image.url }}">
             {% else %}
@@ -15,10 +56,11 @@
             <h6><strong>{{product.name}}</strong></h6>
             <hr>
 
-            <button class="btn btn-outline-secondary add-btn">Añadir</button>
-            <a class="btn btn-outline-success" href="#">Ver Carrito</a>
+            <a href="{% url 'details' product.id %}">
+            <button class="btn btn-outline-secondary add-btn">Ver producto</button>
+            </a>
             <h4 style="display: inline-block; float: right;"><strong>
-                    ${{product.price|floatformat:2}}
+                {{product.price|floatformat:2}} €
                 </strong></h4>
         </div>
     </div>
