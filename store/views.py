@@ -14,6 +14,7 @@ import json
 import datetime
 import random
 import string
+from django.db import transaction
 
 def store(request):
     query = request.GET.get('q', '')
@@ -298,20 +299,15 @@ def updateItem(request):
             quantity = int(data['quantity'])
         except:
             return JsonResponse({'error': 'Cantidad inválida'}, safe=False)
-        if product_size.stock - quantity < 0:
-            return JsonResponse({'error': 'Talla no disponible para la cantidad seleccionada'}, safe=False)
+        if product_size.stock - (quantity + orderItem.quantity) < 0:
+            return JsonResponse({'error': 'Cantidad superior a stock actual: '+ str(product_size.stock)}, safe=False)
         
-        product_size.stock = product_size.stock - quantity
-        product_size.save()
-
         orderItem.quantity = orderItem.quantity + quantity
         orderItem.save()
         return JsonResponse({"success": "Se ha añadido el producto a la cesta"}, safe=False)
     elif action == 'remove':
         orderItem.quantity = orderItem.quantity - 1
         orderItem.save()
-        product_size.stock = product_size.stock + 1
-        product_size.save()
     
     
     if orderItem.quantity <= 0:
@@ -319,6 +315,7 @@ def updateItem(request):
 
     return JsonResponse({}, safe=False)
 
+@transaction.atomic
 def processOrder(request):
     body = json.loads(request.body)
     tracking_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
@@ -339,9 +336,25 @@ def processOrder(request):
         shipping_address.state = body['shipping']['state']
         shipping_address.zipcode = body['shipping']['zipcode']
         shipping_address.country = body['shipping']['country']
+
+        # check all products in cart are available
+        order_items = order.orderitem_set.all()
+        for order_item in order_items:
+            if order_item.product_size.stock - order_item.quantity < 0:
+                return JsonResponse({'error': 'No hay suficiente stock del producto: ' + str(order_item.product_size.product.name) + ', talla: ' + str(order_item.product_size.size.name)}, safe=False)
+
+        # reduce stock of products in cart
+        for order_item in order_items:
+            order_item.product_size.stock = order_item.product_size.stock - order_item.quantity
+            try:
+                order_item.product_size.save()
+            except:
+                return JsonResponse({'error': 'No hay suficiente stock del producto: ' + str(order_item.product_size.product.name) + ', talla: ' + str(order_item.product_size.size.name)}, safe=False)
+
         shipping_address.save()
         order.shipping_address = shipping_address
         order.save()
+        
         
     else:
         return JsonResponse('User is not authenticated', safe=False)
