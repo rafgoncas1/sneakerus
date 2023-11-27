@@ -10,13 +10,11 @@ for(var i = 0; i < updateBtns.length; i++){
 }
 
 function updateUserOrder(productId, size, action, quantity){
-    console.log(quantity)
     
     var url = '/update_item/'
     var csrftoken = getCookie('csrftoken')
 
     body = JSON.stringify({'productId': productId, 'size': size, 'action': action, 'quantity': quantity})
-    console.log(body)
     
     fetch(url, {
         method:'POST',
