@@ -217,9 +217,12 @@
           })
           .then((response) => response.json())
           .then((data) => {
-               console.log('Success:', data);
-               alert('Transaction completed');
-               window.location.href = "/tracking/" + data.tracking
+               if (data.error){
+                    alert(data.error)
+               } else {
+                    alert('Pedido realizado con éxito')
+                    window.location.href = "/tracking/" + data.tracking
+               }
           })
      }
       
