@@ -25,7 +25,6 @@ SECRET_KEY = 'django-insecure-pjur9k@2expfwtktdut0pmq9n5x9fo)7*&wfd&c33^gach3a7f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#FERNET_KEYS = [b'SlxwG3KeBnrBRXNiXP-XTN6E0OOqH1WvRNa5tCdxLNg=']
 
 ALLOWED_HOSTS = []
 

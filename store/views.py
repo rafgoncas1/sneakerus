@@ -11,8 +11,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.http import JsonResponse
 import json
-
-
+import datetime
+import random
+import string
 
 def store(request):
     query = request.GET.get('q', '')
@@ -85,8 +86,10 @@ def checkout(request):
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
         items = order.orderitem_set.all()
-        print(items)
+        
         cartItems = order.get_cart_items
+        if cartItems <= 0:
+            return redirect('store')
         try:
             shippingData = ShippingAddress.objects.get(customer=customer)
         except ShippingAddress.DoesNotExist:
@@ -96,8 +99,7 @@ def checkout(request):
         order = {'get_cart_total': 0, 'get_cart_items': 0}
         cartItems = order['get_cart_items']
     
-    context = {'items': items, 'order': order, 'cartItems': cartItems, 'shippingData':shippingData}
-    print(context)
+    context = {'items': items, 'order': order, 'cartItems': cartItems, 'shippingData':shippingData, 'user': request.user}
     return render(request, 'store/checkout.html', context)
 
 def about(request):
@@ -316,6 +318,35 @@ def updateItem(request):
         orderItem.delete()
 
     return JsonResponse({}, safe=False)
+
+def processOrder(request):
+    body = json.loads(request.body)
+    tracking_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
+    while Order.objects.filter(tracking_id=tracking_id).exists():
+        tracking_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
+    
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        order.date_ordered = datetime.datetime.now()
+        order.status = Status.objects.get(name='Realizado')
+        order.tracking_id = tracking_id
+        order.fast_delivery = body['shipping']['fast_delivery']
+        shipping_address = ShippingAddress.objects.create()
+        shipping_address.customer = None
+        shipping_address.address = body['shipping']['address']
+        shipping_address.city = body['shipping']['city']
+        shipping_address.state = body['shipping']['state']
+        shipping_address.zipcode = body['shipping']['zipcode']
+        shipping_address.country = body['shipping']['country']
+        shipping_address.save()
+        order.shipping_address = shipping_address
+        order.save()
+        
+    else:
+        return JsonResponse('User is not authenticated', safe=False)
+    return JsonResponse({'tracking': tracking_id}, safe=False)
+
 
 def track_orders(request):
     if request.user.is_authenticated:

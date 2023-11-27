@@ -133,38 +133,8 @@ class Status(models.Model):
         verbose_name_plural = 'Status'
         ordering = ['name']
 
-class Order(models.Model):
-    customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
-    date_ordered = models.DateTimeField(auto_now_add=True)
-    status = models.ForeignKey(Status, null=True, on_delete = models.SET_NULL)
-    tracking_id=models.CharField(max_length=200 , null=True, unique=True)
-
-    def __str__(self):
-        return str(self.id)
-    
-    @property
-    def get_cart_items(self):
-        orderitems = self.orderitem_set.all()
-        return sum([item.quantity for item in orderitems])
-
-    @property
-    def get_cart_total(self):
-        orderitems = self.orderitem_set.all()
-        return sum([item.get_total for item in orderitems])
-    
-class OrderItem(models.Model):
-    product_size = models.ForeignKey(ProductSize, null=True, on_delete = models.SET_NULL)
-    order = models.ForeignKey(Order, null=True, on_delete = models.SET_NULL)
-    quantity = models.IntegerField(default=0, null=True, blank=True)
-    date_added = models.DateTimeField(auto_now_add=True)
-
-    @property
-    def get_total(self):
-        return self.product_size.product.price * self.quantity
-
 class ShippingAddress(models.Model):
     customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
-    order = models.ForeignKey(Order, null=True, blank=True, on_delete = models.SET_NULL)
     address = models.CharField(max_length=200 , null=True)
     city = models.CharField(max_length=200 , null=True)
     state = models.CharField(max_length=200 , null=True)
@@ -179,6 +149,37 @@ class ShippingAddress(models.Model):
         verbose_name = 'Shipping address'
         verbose_name_plural = 'Shipping addresses'
         ordering = ['-date_added']
+
+class Order(models.Model):
+    customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
+    date_ordered = models.DateTimeField(auto_now_add=True)
+    status = models.ForeignKey(Status, null=True, on_delete = models.SET_NULL)
+    tracking_id=models.CharField(max_length=200 , null=True, unique=True)
+    fast_delivery = models.BooleanField(default=False, null=True, blank=False)
+    shipping_address = models.ForeignKey('ShippingAddress', null=True, on_delete = models.SET_NULL)
+
+    def __str__(self):
+        return str(self.id)
+    
+    @property
+    def get_cart_items(self):
+        orderitems = self.orderitem_set.all()
+        return sum([item.quantity for item in orderitems])
+
+    @property
+    def get_cart_total(self):
+        orderitems = self.orderitem_set.all()
+        return sum([item.get_total for item in orderitems]) + (5 if self.fast_delivery else 0)
+    
+class OrderItem(models.Model):
+    product_size = models.ForeignKey(ProductSize, null=True, on_delete = models.SET_NULL)
+    order = models.ForeignKey(Order, null=True, on_delete = models.SET_NULL)
+    quantity = models.IntegerField(default=0, null=True, blank=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def get_total(self):
+        return self.product_size.product.price * self.quantity
 
 class PaymentData(models.Model):
     customer = models.ForeignKey(Customer, null=True, on_delete=models.SET_NULL)
