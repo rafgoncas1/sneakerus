@@ -5,35 +5,61 @@
      <div class="col-lg-6">
           <div class="box-element" id="form-wrapper">
                <form id="form">
-                    <div id="user-info">
+                    <div id="user-info">{% if request.user.is_authenticated %}
                          <div class="form-field">
-                              <input required class="form-control" type="text" name="name" placeholder="Nombre">
+                             <input required class="form-control" type="text" name="name" placeholder="Nombre"
+                                 value="{{ request.user.customer.name }}">
                          </div>
                          <div class="form-field">
-                              <input required class="form-control" type="email" name="email" placeholder="Correo Electrónico">
+                             <input required class="form-control" type="email" name="email" placeholder="Correo Electrónico"
+                                 value="{{ request.user.customer.email }}">
                          </div>
+                         {% endif %}
                     </div>
                     
                     <div id="shipping-info">
-                         <hr>
-                         <p>Información de envío:</p>
-                         <hr>
-                         <div class="form-field">
-                              <input class="form-control" type="text" name="address" placeholder="Dirección">
-                         </div>
-                         <div class="form-field">
-                              <input class="form-control" type="text" name="city" placeholder="Ciudad">
-                         </div>
-                         <div class="form-field">
-                              <input class="form-control" type="text" name="state" placeholder="Provincia">
-                         </div>
-                         <div class="form-field">
-                              <input class="form-control" type="text" name="zipcode" placeholder="Código postal">
-                         </div>
-                         <div class="form-field">
-                              <input class="form-control" type="text" name="country" placeholder="País">
-                         </div>
-                    </div>
+     <hr>
+     <p>Información de envío:</p>
+     <hr>
+     {% if shippingData %}
+         <div class="form-field">
+             <input class="form-control" type="text" name="address" placeholder="Dirección"
+                 value="{{ shippingData.address }}">
+         </div>
+         <div class="form-field">
+             <input class="form-control" type="text" name="city" placeholder="Ciudad"
+                 value="{{ shippingData.city }}">
+         </div>
+         <div class="form-field">
+             <input class="form-control" type="text" name="state" placeholder="Provincia"
+                 value="{{ shippingData.state }}">
+         </div>
+         <div class="form-field">
+             <input class="form-control" type="text" name="zipcode" placeholder="Código postal"
+                 value="{{ shippingData.zipcode }}">
+         </div>
+         <div class="form-field">
+             <input class="form-control" type="text" name="country" placeholder="País"
+                 value="{{ shippingData.country }}">
+         </div>
+     {% else %}
+         <div class="form-field">
+             <input class="form-control" type="text" name="address" placeholder="Dirección" value="">
+         </div>
+         <div class="form-field">
+             <input class="form-control" type="text" name="city" placeholder="Ciudad" value="">
+         </div>
+         <div class="form-field">
+             <input class="form-control" type="text" name="state" placeholder="Provincia" value="">
+         </div>
+         <div class="form-field">
+             <input class="form-control" type="text" name="zipcode" placeholder="Código postal" value="">
+         </div>
+         <div class="form-field">
+             <input class="form-control" type="text" name="country" placeholder="País" value="">
+         </div>
+     {% endif %}
+ </div>
 
                     <hr>
                     <input id="form-button" class="btn btn-success btn-block" type="submit" value="Continue">
@@ -65,3 +91,12 @@
      </div>
 </div>
 {% endblock content %}
+
+
+
+
+
+
+
+
+
