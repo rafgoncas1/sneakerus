@@ -5,7 +5,8 @@
      <div class="col-lg-6">
           <div class="box-element" id="form-wrapper">
                <form id="form">
-                    <div id="user-info">{% if request.user.is_authenticated %}
+                    <div id="user-info">
+                         {% if request.user.is_authenticated %}
                          <div class="form-field">
                              <input required class="form-control" type="text" name="name" placeholder="Nombre"
                                  value="{{ request.user.customer.name }}">
@@ -79,14 +80,21 @@
                <hr>
                <h3>Resumen del pedido</h3>
                <hr>
+               {% for item in items %}
                <div class="cart-row">
+                    {% if not item.product_size.product.image %}
                     <div style="flex:2"><img class="row-image" src="{% static 'images/placeholder.png' %}"></div>
-                    <div style="flex:2"><p>Producto 1</p></div>
-                    <div style="flex:1"><p>20.00€</p></div>
-                    <div style="flex:1"><p>x2</p></div>
+                    {% else %}
+                    <div style="flex:2"><img class="row-image" src="{{ item.product_size.product.image.url }}"></div>
+                    {% endif %}
+                    <div style="flex:2"><b>{{item.product_size.product.name}}</b></div>
+                    <div style="flex:2"><p>{{item.product_size.size.name}}</p></div>
+                    <div style="flex:1"><p>{{item.product_size.product.price}}€</p></div>
+                    <div style="flex:1"><p>x{{item.quantity}}</p></div>
                </div>
-               <h5>Productos:   2</h5>
-               <h5>Total:   40€</h5>
+               {% endfor %}
+               <h5>Productos:   <strong>{{cartItems}}</strong></h5>
+               <h5>Total:   <strong>{{order.get_cart_total|floatformat:2}}€</strong></h5>
           </div>
      </div>
 </div>

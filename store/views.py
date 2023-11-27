@@ -85,17 +85,19 @@ def checkout(request):
         customer = request.user.customer
         order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
         items = order.orderitem_set.all()
+        print(items)
         cartItems = order.get_cart_items
-    try:
-        shippingData = ShippingAddress.objects.get(customer=customer)
-    except ShippingAddress.DoesNotExist:
-        pass  
+        try:
+            shippingData = ShippingAddress.objects.get(customer=customer)
+        except ShippingAddress.DoesNotExist:
+            pass  
     else:
         items = []
         order = {'get_cart_total': 0, 'get_cart_items': 0}
         cartItems = order['get_cart_items']
     
     context = {'items': items, 'order': order, 'cartItems': cartItems, 'shippingData':shippingData}
+    print(context)
     return render(request, 'store/checkout.html', context)
 
 def about(request):
