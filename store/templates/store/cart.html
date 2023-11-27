@@ -24,6 +24,7 @@
             <div class="cart-row">
                 <div style="flex:2"></div>
                 <div style="flex:2"><strong>Producto</strong></div>
+                <div style="flex:1"><strong>Talla</strong></div>
                 <div style="flex:1"><strong>Precio</strong></div>
                 <div style="flex:1"><strong>Cantidad</strong></div>
                 <div style="flex:1"><strong>Total</strong></div>
@@ -41,6 +42,7 @@
                 </div>
                 
                 <div style="flex:2"><p>{{ item.product_size.product.name }}</p></div>
+                <div style="flex:1"><p>{{item.product_size.size.name}}</p></div>
                 <div style="flex:1"><p>{{item.product_size.product.price|floatformat:2}}€</p></div>
                 <div style="flex:1">
                     <p class="quantity">{{item.quantity}}</p>
