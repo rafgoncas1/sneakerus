@@ -4,14 +4,19 @@ for(var i = 0; i < updateBtns.length; i++){
       var productId = this.dataset.product
       var size = this.dataset.size
       var action = this.dataset.action
-      updateUserOrder(productId, size, action)
+      var quantity = this.dataset.quantity
+      updateUserOrder(productId, size, action, quantity)
   })
 }
 
-function updateUserOrder(productId, size, action){
+function updateUserOrder(productId, size, action, quantity){
+    console.log(quantity)
     
     var url = '/update_item/'
     var csrftoken = getCookie('csrftoken')
+
+    body = JSON.stringify({'productId': productId, 'size': size, 'action': action, 'quantity': quantity})
+    console.log(body)
     
     fetch(url, {
         method:'POST',
@@ -19,7 +24,7 @@ function updateUserOrder(productId, size, action){
         'Content-Type':'application/json',
         'X-CSRFToken':csrftoken,
         },
-        body: JSON.stringify({'productId': productId, 'size': size, 'action': action})
+        body: body,
     })
     .then((response) => {
         return response.json()
@@ -28,6 +33,9 @@ function updateUserOrder(productId, size, action){
         if (data.error) {
             alert(data.error);
         } else {
+            if (data.success) {
+                alert(data.success);
+            }
             window.location.reload()
         }
     })

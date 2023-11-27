@@ -283,15 +283,19 @@ def updateItem(request):
     order, created = Order.objects.get_or_create(customer=customer, status=Status.objects.get(name='No realizado'))    
     orderItem, created = OrderItem.objects.get_or_create(order=order, product_size=product_size)
     if action == 'add':
-        if product_size.stock <= 0:
-            return JsonResponse({'error': 'Talla no disponible'}, safe=False)
+        try:
+            quantity = int(data['quantity'])
+        except:
+            return JsonResponse({'error': 'Cantidad inválida'}, safe=False)
+        if product_size.stock - quantity < 0:
+            return JsonResponse({'error': 'Talla no disponible para la cantidad seleccionada'}, safe=False)
         
-        product_size.stock = product_size.stock - 1
+        product_size.stock = product_size.stock - quantity
         product_size.save()
 
-        orderItem.quantity = orderItem.quantity + 1
+        orderItem.quantity = orderItem.quantity + quantity
         orderItem.save()
-    
+        return JsonResponse({"success": "Se ha añadido el producto a la cesta"}, safe=False)
     elif action == 'remove':
         orderItem.quantity = orderItem.quantity - 1
         orderItem.save()
@@ -302,7 +306,7 @@ def updateItem(request):
     if orderItem.quantity <= 0:
         orderItem.delete()
 
-    return JsonResponse({"success": "Order updated successfully"}, safe=False)
+    return JsonResponse({}, safe=False)
 
 def track_orders(request):
     if request.user.is_authenticated:
