@@ -15,6 +15,8 @@ import datetime
 import random
 import string
 from django.db import transaction
+from django.views.decorators.csrf import csrf_exempt
+from .utils import cookieCart, cartData
 
 def store(request):
     query = request.GET.get('q', '')
@@ -41,15 +43,9 @@ def store(request):
         brand = brands.get(id=brand_id)
         filters['brand__id'] = brand_id
         filters_applied += f"Marca: {brand.name}. "
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
+    
+    cart = cartData(request)
+
     products = Product.objects.filter(name__icontains=query, **filters)
 
     context = {
@@ -62,78 +58,46 @@ def store(request):
         'size_id': size_id, 
         'brand_id': brand_id,
         'filters_applied': filters_applied,
-        'cartItems': cartItems,
+        'cartItems': cart['cartItems'],
     }
     return render(request, 'store/store.html', context)
 
 def cart(request):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
+    cart = cartData(request)
 
-    context = {'items': items, 'order': order, 'cartItems': cartItems}
+    context = {'items': cart['items'], 'order': cart['order'], 'cartItems': cart['cartItems']}
     return render(request, 'store/cart.html', context)
 
 def checkout(request):
     shippingData = None
     
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        items = order.orderitem_set.all()
-        
-        cartItems = order.get_cart_items
-        if cartItems <= 0:
-            return redirect('store')
-        try:
-            shippingData = ShippingAddress.objects.get(customer=customer)
-        except ShippingAddress.DoesNotExist:
-            pass  
-    else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
+    cart = cartData(request)
     
-    context = {'items': items, 'order': order, 'cartItems': cartItems, 'shippingData':shippingData, 'user': request.user}
+    if cart['cartItems'] <= 0:
+            return redirect('store')
+    if request.user.is_authenticated:
+        try:
+            shippingData = ShippingAddress.objects.get(customer=request.user.customer)
+        except ShippingAddress.DoesNotExist:
+            pass 
+    context = {'items': cart['items'], 'order': cart['order'], 'cartItems': cart['cartItems'], 'shippingData':shippingData}
     return render(request, 'store/checkout.html', context)
 
 def about(request):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
+    cart = cartData(request)
     
-    context = {'cartItems': cartItems}
+    context = {'cartItems': cart['cartItems']}
     return render(request, 'store/about.html', context)
 
 def productDetails(request, producto_id):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
+    cart = cartData(request)
         
     producto = get_object_or_404(Product, pk=producto_id)
     colors = producto.productcolor_set.all()
 
     # sizes ordered by name
     sizes = producto.productsize_set.all().order_by('size__name')
-    return render(request, 'store/product.html', {'product': producto, 'colors': colors, 'sizes': sizes, 'cartItems': cartItems})
+    return render(request, 'store/product.html', {'product': producto, 'colors': colors, 'sizes': sizes, 'cartItems': cart['cartItems']})
 
 
 def auth_login(request):
@@ -180,32 +144,17 @@ def auth_logout(request):
     logout(request)
     return redirect('store')
 
-
+@login_required
 def profile(request, customer_id):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
+    cart = cartData(request)
     customer = Customer.objects.get(user=request.user)
     customer_id = customer.id
     shipping_address = ShippingAddress.objects.filter(customer=customer)
-    return render(request, 'store/profile.html', {'customer': customer, 'shipping_address': shipping_address, 'customer_id': customer_id, 'cartItems': cartItems})
+    return render(request, 'store/profile.html', {'customer': customer, 'shipping_address': shipping_address, 'customer_id': customer_id, 'cartItems': cart['cartItems']})
 
+@login_required
 def create_update_delivery(request):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
+    cart = cartData(request)
     customer = request.user.customer
     shipping_address = customer.shippingaddress_set.last()
     form = ShippingAddressForm(request.POST or None, instance=shipping_address)
@@ -215,18 +164,11 @@ def create_update_delivery(request):
             new_shipping_address.customer = customer
             new_shipping_address.save()
             return redirect('store')
-    return render(request, 'store/delivery_form.html', {'form': form, 'customer': customer, 'cartItems': cartItems})
+    return render(request, 'store/delivery_form.html', {'form': form, 'customer': customer, 'cartItems': cart['cartItems']})
 
+@login_required
 def create_update_payment(request):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
+    cart = cartData(request)
     customer = request.user.customer
     payment_data = customer.paymentdata_set.last()
     form = PaymentDataForm(request.POST or None, instance=payment_data)
@@ -236,7 +178,7 @@ def create_update_payment(request):
             new_payment_data.customer = customer
             new_payment_data.save()
             return redirect('store')
-    return render(request, 'store/payment_form.html', {'form': form, 'customer': customer, 'cartItems': cartItems})
+    return render(request, 'store/payment_form.html', {'form': form, 'customer': customer, 'cartItems': cart['cartItems']})
 
 def user_has_perm(user):
     if not user.is_staff:
@@ -281,96 +223,110 @@ def customer_delete(request, customer_id):
     customer.delete()
     return redirect('customer_list')
 
-  
+@csrf_exempt
 def updateItem(request):
     data = json.loads(request.body)
     productId = data['productId']
     size_name = data['size']
     action = data['action']
-    
-    customer = Customer.objects.get_or_create(user=request.user)[0]
-    product_size = ProductSize.objects.get(size=Size.objects.get(name=size_name), product=Product.objects.get(id=productId))
-    if not product_size:
-            return JsonResponse({'error': 'No existe la talla del producto'}, safe=False)
-    order, created = Order.objects.get_or_create(customer=customer, status=Status.objects.get(name='No realizado'))    
-    orderItem, created = OrderItem.objects.get_or_create(order=order, product_size=product_size)
-    if action == 'add':
-        try:
-            quantity = int(data['quantity'])
-        except:
-            return JsonResponse({'error': 'Cantidad inválida'}, safe=False)
-        if product_size.stock - (quantity + orderItem.quantity) < 0:
-            return JsonResponse({'error': 'Cantidad superior a stock actual: '+ str(product_size.stock)}, safe=False)
-        
-        orderItem.quantity = orderItem.quantity + quantity
-        orderItem.save()
-        return JsonResponse({"success": "Se ha añadido el producto a la cesta"}, safe=False)
-    elif action == 'remove':
-        orderItem.quantity = orderItem.quantity - 1
-        orderItem.save()
-    
-    
-    if orderItem.quantity <= 0:
-        orderItem.delete()
 
-    return JsonResponse({}, safe=False)
+    cart = cartData(request)
+    
+    if request.user.is_authenticated:
+        product_size = ProductSize.objects.get(size=Size.objects.get(name=size_name), product=Product.objects.get(id=productId))
+        if not product_size:
+                return JsonResponse({'error': 'No existe la talla del producto'}, safe=False)
+        order = cart['order']  
+        orderItem, created = OrderItem.objects.get_or_create(order=order, product_size=product_size)
+        if action == 'add':
+            try:
+                quantity = int(data['quantity'])
+            except:
+                return JsonResponse({'error': 'Cantidad inválida'}, safe=False)
+            if product_size.stock - (quantity + orderItem.quantity) < 0:
+                return JsonResponse({'error': 'Cantidad superior a stock actual: '+ str(product_size.stock)}, safe=False)
+            
+            orderItem.quantity = orderItem.quantity + quantity
+            orderItem.save()
+            return JsonResponse({"success": "Se ha añadido el producto a la cesta"}, safe=False)
+        elif action == 'remove':
+            orderItem.quantity = orderItem.quantity - 1
+            orderItem.save()
+        if orderItem.quantity <= 0:
+            orderItem.delete()
+        return JsonResponse({}, safe=False)
+    else:
+        product_size = ProductSize.objects.get(size=Size.objects.get(name=size_name), product=Product.objects.get(id=productId))
+        if not product_size:
+            return JsonResponse({'error': 'No existe la talla del producto'}, safe=False)
+        if action == 'add':
+            try:
+                quantity = int(data['quantity'])
+            except:
+                return JsonResponse({'error': 'Cantidad inválida'}, safe=False)
+            if product_size.stock - quantity < 0:
+                return JsonResponse({'error': 'Cantidad superior a stock actual: '+ str(product_size.stock)}, safe=False)
+            return JsonResponse({"success": "Se ha añadido el producto a la cesta"}, safe=False)
+        
+        return JsonResponse({}, safe=False)
+        
 
 @transaction.atomic
 def processOrder(request):
     body = json.loads(request.body)
-    tracking_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
+    timestamp = datetime.datetime.now().strftime("%d%m%Y")
+    tracking_id = timestamp + ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
     while Order.objects.filter(tracking_id=tracking_id).exists():
-        tracking_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
+        tracking_id = timestamp + ''.join(random.choices(string.ascii_uppercase + string.digits, k=14))
+
+    cart = cartData(request)
     
     if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        order.date_ordered = datetime.datetime.now()
-        order.status = Status.objects.get(name='Realizado')
-        order.tracking_id = tracking_id
-        order.fast_delivery = body['shipping']['fast_delivery']
-        shipping_address = ShippingAddress.objects.create()
-        shipping_address.customer = None
-        shipping_address.address = body['shipping']['address']
-        shipping_address.city = body['shipping']['city']
-        shipping_address.state = body['shipping']['state']
-        shipping_address.zipcode = body['shipping']['zipcode']
-        shipping_address.country = body['shipping']['country']
-
-        # check all products in cart are available
-        order_items = order.orderitem_set.all()
-        for order_item in order_items:
-            if order_item.product_size.stock - order_item.quantity < 0:
-                return JsonResponse({'error': 'No hay suficiente stock del producto: ' + str(order_item.product_size.product.name) + ', talla: ' + str(order_item.product_size.size.name)}, safe=False)
-
-        # reduce stock of products in cart
-        for order_item in order_items:
-            order_item.product_size.stock = order_item.product_size.stock - order_item.quantity
-            try:
-                order_item.product_size.save()
-            except:
-                return JsonResponse({'error': 'No hay suficiente stock del producto: ' + str(order_item.product_size.product.name) + ', talla: ' + str(order_item.product_size.size.name)}, safe=False)
-
-        shipping_address.save()
-        order.shipping_address = shipping_address
-        order.save()
-        
-        
+        order = cart['order']
     else:
-        return JsonResponse('User is not authenticated', safe=False)
+        customer, created = Customer.objects.get_or_create(email=body['form']['email'], name=body['form']['name'])
+        order = Order.objects.create(customer=customer, status=Status.objects.get(name='No realizado'))
+        items = cart['items']
+        for item in items:
+            product_size = ProductSize.objects.get(size=Size.objects.get(name=item['product_size']['size'].name), product=Product.objects.get(id=item['product_size']['product'].id))
+            orderItem = OrderItem.objects.create(order=order, product_size=product_size, quantity=item['quantity'])
+            orderItem.save()
+
+    order.date_ordered = datetime.datetime.now()
+    order.status = Status.objects.get(name='Realizado')
+    order.tracking_id = tracking_id
+    order.fast_delivery = body['shipping']['fast_delivery']
+    shipping_address = ShippingAddress.objects.create()
+    shipping_address.customer = None
+    shipping_address.address = body['shipping']['address']
+    shipping_address.city = body['shipping']['city']
+    shipping_address.state = body['shipping']['state']
+    shipping_address.zipcode = body['shipping']['zipcode']
+    shipping_address.country = body['shipping']['country']
+
+    # check all products in cart are available
+    order_items = order.orderitem_set.all()
+    for order_item in order_items:
+        if order_item.product_size.stock - order_item.quantity < 0:
+            return JsonResponse({'error': 'No hay suficiente stock del producto: ' + str(order_item.product_size.product.name) + ', talla: ' + str(order_item.product_size.size.name)}, safe=False)
+
+    # reduce stock of products in cart
+    for order_item in order_items:
+        order_item.product_size.stock = order_item.product_size.stock - order_item.quantity
+        try:
+            order_item.product_size.save()
+        except:
+            return JsonResponse({'error': 'No hay suficiente stock del producto: ' + str(order_item.product_size.product.name) + ', talla: ' + str(order_item.product_size.size.name)}, safe=False)
+
+    shipping_address.save()
+    order.shipping_address = shipping_address
+    order.save()
+    
     return JsonResponse({'tracking': tracking_id}, safe=False)
 
 
 def track_orders(request):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
+    cart = cartData(request)
     if request.method == 'POST':
         tracking_id = request.POST.get('tracking_id')
         if tracking_id:
@@ -378,21 +334,13 @@ def track_orders(request):
             if tracking:
                 return HttpResponseRedirect("/tracking/" + tracking_id)
             else:
-                return render(request, 'store/track_order.html', {'cartItems': cartItems})
+                return render(request, 'store/track_order.html', {'cartItems': cart['cartItems']})
         else:
-            return render(request, 'store/track_order.html', {'error_message': 'Por favor, proporciona un ID de seguimiento.', 'cartItems': cartItems})
-    return render(request, 'store/track_order.html', {'cartItems': cartItems})
+            return render(request, 'store/track_order.html', {'error_message': 'Por favor, proporciona un ID de seguimiento.', 'cartItems': cart['cartItems']})
+    return render(request, 'store/track_order.html', {'cartItems': cart['cartItems']})
 
 def track_order(request, tracking_id):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
+    cart = cartData(request)
     try:
         order = get_object_or_404(Order, tracking_id=tracking_id)
         order_items = OrderItem.objects.filter(order=order)
@@ -400,7 +348,7 @@ def track_order(request, tracking_id):
         # Calcular el costo total del pedido
         total_cost = order.get_cart_total
 
-        context = {'order': order, 'order_items': order_items, 'total_cost': total_cost, 'cartItems': cartItems}
+        context = {'order': order, 'order_items': order_items, 'total_cost': total_cost, 'cartItems': cart['cartItems']}
     except Order.DoesNotExist:
         return render(request, 'store/track_order.html', {'error_message': f'No existe un pedido con ID de seguimiento {tracking_id}.'})
 
@@ -408,17 +356,9 @@ def track_order(request, tracking_id):
 
 @login_required
 def view_orders(request):
-    if request.user.is_authenticated:
-        customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
-        items = order.orderitem_set.all()
-        cartItems = order.get_cart_items
-    else:
-        items = []
-        order = {'get_cart_total': 0, 'get_cart_items': 0}
-        cartItems = order['get_cart_items']
+    cart = cartData(request)
     # orders with status distinct from 'No realizado'
     user_orders = Order.objects.exclude(status=Status.objects.get(name='No realizado')).order_by('-date_ordered')
-    context = {'user_orders': user_orders, 'cartItems': cartItems}
+    context = {'user_orders': user_orders, 'cartItems': cart['cartItems']}
     return render(request, 'store/view_orders.html', context)
 

@@ -5,6 +5,7 @@
      <div class="col-lg-6">
           <div class="box-element" id="form-wrapper">
                <form id="form">
+                    {% csrf_token %}
                     <div id="user-info">
                          <div class="form-field">
                              <input required class="form-control" type="text" name="name" placeholder="Nombre">
@@ -129,7 +130,6 @@
           document.getElementById('express-delivery').checked = false
      }
 
-     var user = "{{request.user}}"
      if (user != 'AnonymousUser'){
           document.getElementById('user-info').innerHTML = ''
      }
@@ -221,6 +221,10 @@
                     alert(data.error)
                } else {
                     alert('Pedido realizado con éxito')
+                    var cart = getCookie('cart')
+                    if (cart){
+                         document.cookie = 'cart=' + JSON.stringify({}) + ";domain=;path=/"
+                    }
                     window.location.href = "/tracking/" + data.tracking
                }
           })
