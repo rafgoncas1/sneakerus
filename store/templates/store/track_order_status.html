@@ -47,8 +47,10 @@
                                         <div class="col-md-9">
                                                 <p><strong>{{ item.product_size.product.name }}</strong> | {{item.product_size.size.name}}</p>
                                                 <p>Cantidad: {{ item.quantity }} x {{ item.product_size.product.price|floatformat:2 }}€</p> 
-
                                         </div>
+                                        {% if order.status.name == 'Entregado' and item.product_size.product.id not in user_ratings %}
+                                            <a href="{% url 'review_order' product_id=item.product_size.product_id %}" class="btn btn-secondary">Opinar</a>
+                                        {% endif %}
                                     </div>
                                 </li>
                             {% endfor %}

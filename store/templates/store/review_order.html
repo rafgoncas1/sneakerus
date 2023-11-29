@@ -1,0 +1,34 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+    <div class="container mt-5">
+        <h2 class="mb-4">Valorar Producto #{{ product.id }}</h2>
+        <h3>{{ product.name }}</h3> 
+        <img src="{{ product.image.url }}" alt="{{ product.name }}"style="max-width: 400px; height: auto;"> 
+        <form method="POST" action="">
+            {% if error_message %}
+        <div class="alert alert-danger" role="alert">
+            {{ error_message }}
+        </div>
+    {% endif %}
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="rating">Valoración</label>
+                <div class="rating">
+                    <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="Muy bueno">5 stars</label>
+                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="Bueno">4 stars</label>
+                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="Normal">3 stars</label>
+                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="Malo">2 stars</label>
+                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="Muy malo">1 star</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <textarea class="form-control" id="comment" name="comment" rows="3"></textarea>
+            </div>
+        <button type="submit" class="btn btn-primary">Enviar Valoración</button>
+        </form>
+    </div>
+{% endblock content %}
+
+
+
