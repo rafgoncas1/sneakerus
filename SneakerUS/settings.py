@@ -25,7 +25,6 @@ SECRET_KEY = 'django-insecure-pjur9k@2expfwtktdut0pmq9n5x9fo)7*&wfd&c33^gach3a7f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#FERNET_KEYS = [b'SlxwG3KeBnrBRXNiXP-XTN6E0OOqH1WvRNa5tCdxLNg=']
 
 ALLOWED_HOSTS = []
 
@@ -134,3 +133,12 @@ MEDIA_URL = '/products/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = 'login'
+
+
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # Imprime el correo por consola en vez de enviarse
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.office365.com'  # Cambiado a la dirección del servidor SMTP de Outlook
+EMAIL_PORT = 587  # Puerto típicamente usado por Outlook para TLS
+EMAIL_USE_TLS = True  # Usar TLS para una conexión segura
+EMAIL_HOST_USER = 'sneakerUS@outlook.es'
+EMAIL_HOST_PASSWORD = 'Testsneaker'

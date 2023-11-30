@@ -5,12 +5,13 @@
      <div class="col-lg-6">
           <div class="box-element" id="form-wrapper">
                <form id="form">
+                    {% csrf_token %}
                     <div id="user-info">
                          <div class="form-field">
-                              <input required class="form-control" type="text" name="name" placeholder="Nombre">
+                             <input required class="form-control" type="text" name="name" placeholder="Nombre">
                          </div>
                          <div class="form-field">
-                              <input required class="form-control" type="email" name="email" placeholder="Correo Electrónico">
+                             <input required class="form-control" type="email" name="email" placeholder="Correo Electrónico">
                          </div>
                     </div>
                     
@@ -18,31 +19,108 @@
                          <hr>
                          <p>Información de envío:</p>
                          <hr>
+                         {% if shippingData %}
                          <div class="form-field">
-                              <input class="form-control" type="text" name="address" placeholder="Dirección">
+                              <input class="form-control" type="text" name="address" placeholder="Dirección"
+                                   value="{{ shippingData.address }}">
                          </div>
                          <div class="form-field">
-                              <input class="form-control" type="text" name="city" placeholder="Ciudad">
+                              <input class="form-control" type="text" name="city" placeholder="Ciudad"
+                                   value="{{ shippingData.city }}">
                          </div>
                          <div class="form-field">
-                              <input class="form-control" type="text" name="state" placeholder="Provincia">
+                              <input class="form-control" type="text" name="state" placeholder="Provincia"
+                                   value="{{ shippingData.state }}">
                          </div>
                          <div class="form-field">
-                              <input class="form-control" type="text" name="zipcode" placeholder="Código postal">
+                              <input class="form-control" type="text" name="zipcode" placeholder="Código postal"
+                                   value="{{ shippingData.zipcode }}">
                          </div>
                          <div class="form-field">
-                              <input class="form-control" type="text" name="country" placeholder="País">
+                              <input class="form-control" type="text" name="country" placeholder="País"
+                                   value="{{ shippingData.country }}">
                          </div>
+                         {% else %}
+                         <div class="form-field">
+                              <input class="form-control" type="text" name="address" placeholder="Dirección" value="">
+                         </div>
+                         <div class="form-field">
+                              <input class="form-control" type="text" name="city" placeholder="Ciudad" value="">
+                         </div>
+                         <div class="form-field">
+                              <input class="form-control" type="text" name="state" placeholder="Provincia" value="">
+                         </div>
+                         <div class="form-field">
+                              <input class="form-control" type="text" name="zipcode" placeholder="Código postal" value="">
+                         </div>
+                         <div class="form-field">
+                              <input class="form-control" type="text" name="country" placeholder="País" value="">
+                         </div>
+                         {% endif %}
+                         <div class="form-field">
+                              <input type="checkbox" id="express-delivery" name="express" placeholder="false">
+                              <label for="express-delivery">Entrega Express <strong>+5.00€</strong></label>
+                         </div>
+                         <input type="hidden" id="order-total" value="{{order.get_cart_total|floatformat:2}}">
+
                     </div>
 
                     <hr>
-                    <input id="form-button" class="btn btn-success btn-block" type="submit" value="Continue">
+                    <input id="form-button" class="btn btn-info btn-block rounded-2" type="submit" value="Continuar" disabled>
                </form>
           </div>
 
           <br>
           <div class="box-element hidden" id="payment-info">
-               <small>Paypal</small>
+               <table>
+               <thead>
+                    <tr>
+                        <th>Método de Pago</th>
+                        <th></th>
+                    </tr>
+                </thead>
+               <tbody>
+                    <tr style="margin-top: 15px;">
+                         <td>
+                              Contrareembolso: 
+                         </td>
+                         <td style="padding-left: 30px;">
+                              <button id="make-payment" class="btn btn-success rounded-2" style="width: 150px;">Realizar Pedido</button>
+                         </td>
+                    </tr>
+                    <tr style="margin-top: 15px;">
+
+                         <div id="paypal-button-container"></div>
+                         <script src="https://www.paypal.com/sdk/js?client-id=AWZIJZa9rY5wUizrK6KfqFV1HtdfvPkwB30pVJl_ybBn7JMhfz4xMXePPHWk5JKHgKAkX5B3ZXKeCxf1&currency=USD"></script>
+
+                         <script>
+                         paypal.Buttons({
+                              // Set up the transaction
+                              createOrder: function(data, actions) {
+                                   var orderTotal = document.getElementById('order-total').value;
+                                   var deliveryCost = document.getElementById('express-delivery').checked ? 5.00 : 0.00;
+                                   var totalWithDelivery = parseFloat(orderTotal) + parseFloat(deliveryCost);
+
+                                   return actions.order.create({
+                                       purchase_units: [{
+                                            amount: {
+                                               value: totalWithDelivery.toFixed(2)
+                                            }
+                                        }]
+                                    });
+                                  },
+                                // Finalize the transaction
+                                onApprove: function(data, actions) {
+                                   return actions.order.capture().then(function(orderData) {
+                                        submitFormData();
+
+                                     });
+                                  }
+                         }).render('#paypal-button-container');
+                         </script>
+                    </tr>
+               </tbody>
+               </table>
           </div>
           
      </div>
@@ -53,15 +131,153 @@
                <hr>
                <h3>Resumen del pedido</h3>
                <hr>
+               {% for item in items %}
                <div class="cart-row">
+                    {% if not item.product_size.product.image %}
                     <div style="flex:2"><img class="row-image" src="{% static 'images/placeholder.png' %}"></div>
-                    <div style="flex:2"><p>Producto 1</p></div>
-                    <div style="flex:1"><p>20.00€</p></div>
-                    <div style="flex:1"><p>x2</p></div>
+                    {% else %}
+                    <div style="flex:2"><img class="row-image" src="{{ item.product_size.product.image.url }}"></div>
+                    {% endif %}
+                    <div style="flex:2"><b>{{item.product_size.product.name}}</b></div>
+                    <div style="flex:2"><p>{{item.product_size.size.name}}</p></div>
+                    <div style="flex:1"><p>{{item.product_size.product.price}}€</p></div>
+                    <div style="flex:1"><p>x{{item.quantity}}</p></div>
                </div>
-               <h5>Productos:   2</h5>
-               <h5>Total:   40€</h5>
+               {% endfor %}
+               <h5 id="products">Productos:   <strong>{{cartItems}}</strong></h5>
+               <h5 id="total">Total:   <strong>{{order.get_cart_total|floatformat:2}}€</strong></h5>
           </div>
      </div>
 </div>
+<script>
+
+     window.onload = function(){
+          document.getElementById('express-delivery').checked = false
+          var user = "{{ user }}";
+    if (user !== 'AnonymousUser') {
+        // Si el usuario está autenticado, llenar automáticamente los campos del formulario
+        var username = "{{ request.user.customer.name }}";
+        var userEmail = "{{ request.user.email }}";
+
+        document.getElementById('form').name.value = username;
+        document.getElementById('form').email.value = userEmail;
+
+        // Deshabilitar los campos ya que están autocompletados
+        document.getElementById('user-info').querySelectorAll('input').forEach(function(input) {
+            input.disabled = true;
+        });
+    }
+}
+     
+
+     if (user != 'AnonymousUser'){
+          document.getElementById('user-info').innerHTML = ''
+     }
+
+     var form = document.getElementById('form')
+     form.addEventListener('submit', function(e){
+
+          if(form.zipcode.value.length != 5){
+               alert('El código postal debe tener 5 dígitos')
+               e.preventDefault()
+               return
+          }
+          if(form.zipcode.value.match(/^[0-9]+$/) == null){
+               alert('El código postal debe contener solo números')
+               e.preventDefault()
+               return
+          }
+
+          e.preventDefault()
+          document.getElementById('form-button').classList.add('hidden')
+          document.getElementById('payment-info').classList.remove('hidden')
+          
+     })
+
+     var inputs = document.querySelectorAll('input[type="text"]');
+     var submitButton = document.getElementById('form-button');
+
+     inputs.forEach(input => {
+          var allFilled = Array.from(inputs).every(input => input.value !== '');
+          submitButton.disabled = !allFilled;
+     });
+     
+     inputs.forEach(input => {
+          input.addEventListener('input', function() {
+               var allFilled = Array.from(inputs).every(input => input.value !== '');
+               submitButton.disabled = !allFilled;
+          });
+     });
+
+     var realTotal = parseFloat("{{order.get_cart_total|floatformat:2}}")
+     var delivery = document.getElementById('express-delivery')
+     delivery.addEventListener('click', function(e){
+          if (delivery.checked == true){
+               var modifiedTotal = parseFloat(realTotal + 5.00)
+               document.getElementById('total').innerHTML = 'Total:   <strong>' + modifiedTotal + '€</strong>'
+               document.getElementById('products').innerHTML = 'Productos:   <strong>{{cartItems}}</strong> + Entrega Express'
+          } else {
+               document.getElementById('total').innerHTML = 'Total:   <strong>' + realTotal + '€</strong>'
+               document.getElementById('products').innerHTML = 'Productos:   <strong>{{cartItems}}</strong>'
+          }
+     })
+
+     document.getElementById('make-payment').addEventListener('click', function(e){
+          submitFormData()
+     })
+
+     function submitFormData() {
+          var userFormData = {
+               'name':null,
+               'email':null,
+          }
+          var shippingInfo = {
+               'address':form.address.value,
+               'city':form.city.value,
+               'state':form.state.value,
+               'zipcode':form.zipcode.value,
+               'country':form.country.value,
+               'fast_delivery':form.express.checked,
+          }
+
+          if (user == 'AnonymousUser'){
+               userFormData.name = form.name.value
+               userFormData.email = form.email.value
+          }
+          
+          var csrftoken = getCookie('csrftoken')
+          var url = "{% url 'process_order' %}"
+          fetch(url, {
+               method:'POST',
+               headers:{
+                    'Content-Type':'application/json',
+                    'X-CSRFToken':csrftoken,
+               },
+               body:JSON.stringify({'form':userFormData, 'shipping':shippingInfo}),
+          })
+          .then((response) => response.json())
+          .then((data) => {
+               if (data.error){
+                    alert(data.error)
+               } else {
+                    alert('Pedido realizado con éxito')
+                    var cart = getCookie('cart')
+                    if (cart){
+                         document.cookie = 'cart=' + JSON.stringify({}) + ";domain=;path=/"
+                    }
+                    window.location.href = "/tracking/" + data.tracking
+               }
+          })
+     }
+      
+</script>
 {% endblock content %}
+
+
+
+
+
+
+
+
+

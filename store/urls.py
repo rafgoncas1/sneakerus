@@ -18,6 +18,7 @@ urlpatterns = [
     path('customerupdate/<int:customer_id>/', views.customer_update, name='customer_update'),
     path('customerdelete/<int:customer_id>/', views.customer_delete, name='customer_delete'),
     path('update_item/', views.updateItem, name='update_item'),
+    path('process_order/', views.processOrder, name='process_order'),
     path('tracking/', views.track_orders, name='track_orders'),
     path('tracking/<str:tracking_id>/', views.track_order, name='track_order'),
     path('orders/', views.view_orders, name='view_orders'),

@@ -19,12 +19,12 @@
         <p><strong>Detalles:</strong> {{product.details}}</p>
         <p><strong>
           {% for color in colors %}
-            <span >{{ color }}</span> /
+            <span >{{ color.color }}</span> /
           {% endfor %}
         </strong></p>
         <div id="sizes-container" style="padding-bottom: 10px">
           {% for size in sizes %}
-            <button class="size-btn" data-stock="{{ size.stock }}">{{ size }}</button>
+            <button class="size-btn" data-stock="{{ size.stock }}">{{ size.size }}</button>
           {% endfor %}
         </div>
         <div style="flex-direction: column;">
