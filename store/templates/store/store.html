@@ -5,12 +5,12 @@
     <div class="col-lg-3"style="height: 100vh; overflow-y: auto;">
         <form action="/" method="get">
             <input type="hidden" name="q" value="{{ query }}">
-            <input type="hidden" name="color" value="{{ color }}">
+            <input type="hidden" name="color" value="{{ color }}"
             <input type="hidden" name="talla" value="{{ talla }}">
             <div id="marca">
                 <p>Marca:</p>
                 {% for brand in brands %}
-                    <input type="checkbox" id="{{ brand.name }}" name="marca" value="{{ brand.id }}" onchange="this.form.submit()">>
+                    <input type="checkbox" id="{{ brand.name }}" name="marca" value="{{ brand.id }}" onchange="this.form.submit()">
                     <label for="{{ brand.name }}">{{ brand.name }}</label><br>
                 {% endfor %}
             </div>
