@@ -50,6 +50,8 @@
                                         </div>
                                         {% if order.status.name == 'Entregado' and item.product_size.product.id not in user_ratings %}
                                             <a href="{% url 'review_order' product_id=item.product_size.product_id %}" class="btn btn-secondary">Opinar</a>
+                                        {% elif order.status.name == 'Entregado' %}
+                                            <button class="btn btn-secondary" disabled>Ya has opinado sobre el producto</button>
                                         {% endif %}
                                         {% if item.product_size.product.id not in claimed_products %}
                                             <a href="{% url 'claim_product' product_id=item.product_size.product_id order_id=order.id %}" class="btn btn-warning">Reclamar Pedido</a>
