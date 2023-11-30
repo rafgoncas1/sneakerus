@@ -153,7 +153,22 @@
 
      window.onload = function(){
           document.getElementById('express-delivery').checked = false
-     }
+          var user = "{{ user }}";
+    if (user !== 'AnonymousUser') {
+        // Si el usuario está autenticado, llenar automáticamente los campos del formulario
+        var username = "{{ request.user.customer.name }}";
+        var userEmail = "{{ request.user.email }}";
+
+        document.getElementById('form').name.value = username;
+        document.getElementById('form').email.value = userEmail;
+
+        // Deshabilitar los campos ya que están autocompletados
+        document.getElementById('user-info').querySelectorAll('input').forEach(function(input) {
+            input.disabled = true;
+        });
+    }
+}
+     
 
      if (user != 'AnonymousUser'){
           document.getElementById('user-info').innerHTML = ''
