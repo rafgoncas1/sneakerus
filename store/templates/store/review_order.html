@@ -2,8 +2,7 @@
 {% load static %}
 {% block content %}
     <div class="container mt-5">
-        <h2 class="mb-4">Valorar Producto #{{ product.id }}</h2>
-        <h3>{{ product.name }}</h3> 
+        <h2 class="mb-4">Valorar {{ product.name }}</h2>
         <img src="{{ product.image.url }}" alt="{{ product.name }}"style="max-width: 400px; height: auto;"> 
         <form method="POST" action="">
             {% if error_message %}
@@ -13,7 +12,8 @@
     {% endif %}
             {% csrf_token %}
             <div class="form-group">
-                <label for="rating">Valoración</label>
+                <br>
+                <label for="rating">¡Deja tu valoración aquí!</label>
                 <div class="rating">
                     <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="Muy bueno">5 stars</label>
                     <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="Bueno">4 stars</label>

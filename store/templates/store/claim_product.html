@@ -1,28 +1,42 @@
 {% extends 'store/main.html' %}
 {% load static %}
 {% block content %}
-<form action="{% url 'claim_product' product.id order.id %}" method="post">
-    {% csrf_token %}
-    <div class="form-group">
-        <label for="claimDescription">Descripción de la reclamación:</label>
-        <div id="buttonGroup">
-            <button type="button" class="btn btn-outline-secondary claimButton" data-value="El paquete no ha llegado">El paquete no ha llegado</button>
-            <button type="button" class="btn btn-outline-secondary claimButton" data-value="Faltan piezas o productos">Faltan piezas o productos</button>
-            <button type="button" class="btn btn-outline-secondary claimButton" data-value="Producto dañado o defectuoso">Producto dañado o defectuoso</button>
-            <button type="button" class="btn btn-outline-secondary claimButton" data-value="Distinto al que había solicitado">Distinto al que había solicitado</button>
-            <button type="button" class="btn btn-outline-secondary claimButton" data-value="Otro">Otro</button>
+<div style="text-align: center;">
+    <form action="{% url 'claim_product' product.id order.id %}" method="post" style="display: inline-block;">
+        {% csrf_token %}
+        <div class="form-group">
+            <h2>Descripción de la reclamación:</h2>
+            <img src="{{ product.image.url }}" alt="{{ product.name }}"style="max-width: 400px; height: auto;"> 
+            <div id="buttonGroup" ">
+                <br>
+                <button type="button" class="btn btn-outline-secondary claimButton" data-value="El paquete no ha llegado">El paquete no ha llegado</button>
+                <br>
+                <br>
+                <button type="button" class="btn btn-outline-secondary claimButton" data-value="Faltan piezas o productos">Faltan piezas o productos</button>
+                <br>
+                <br>
+                <button type="button" class="btn btn-outline-secondary claimButton" data-value="Producto dañado o defectuoso">Producto dañado o defectuoso</button>
+                <br>
+                <br>
+                <button type="button" class="btn btn-outline-secondary claimButton" data-value="Distinto al que había solicitado">Distinto al que había solicitado</button>
+                <br>
+                <br>
+                <button type="button" class="btn btn-outline-secondary claimButton" data-value="Otro">Otro</button>
+                <br>
+                <br>
+            </div>
+            <label id="otherLabel" style="display: none;">Indícanos tu motivo en este campo:</label>
+            <textarea class="form-control" id="otherText" name="otherText" rows="3" style="display: none;"></textarea>
+            <input type="hidden" id="claimDescription" name="claimDescription">
         </div>
-        <label id="otherLabel" style="display: none;">Indícanos tu motivo en este campo:</label>
-        <textarea class="form-control" id="otherText" name="otherText" rows="3" style="display: none;"></textarea>
-        <input type="hidden" id="claimDescription" name="claimDescription">
-    </div>
-    {% if error_message %}
-        <div class="alert alert-danger">
-            {{ error_message }}
-        </div>
-    {% endif %}
-    <button type="submit" class="btn btn-secondary">Reclamar Pedido</button>
-</form>
+        {% if error_message %}
+            <div class="alert alert-danger">
+                {{ error_message }}
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary">Reclamar Pedido</button>
+    </form>
+</div>
 
 <script>
     var buttons = document.querySelectorAll('.claimButton');
