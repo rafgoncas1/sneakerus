@@ -1,0 +1,55 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+<form action="{% url 'claim_product' product.id order.id %}" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="claimDescription">Descripción de la reclamación:</label>
+        <div id="buttonGroup">
+            <button type="button" class="btn btn-outline-secondary claimButton" data-value="El paquete no ha llegado">El paquete no ha llegado</button>
+            <button type="button" class="btn btn-outline-secondary claimButton" data-value="Faltan piezas o productos">Faltan piezas o productos</button>
+            <button type="button" class="btn btn-outline-secondary claimButton" data-value="Producto dañado o defectuoso">Producto dañado o defectuoso</button>
+            <button type="button" class="btn btn-outline-secondary claimButton" data-value="Distinto al que había solicitado">Distinto al que había solicitado</button>
+            <button type="button" class="btn btn-outline-secondary claimButton" data-value="Otro">Otro</button>
+        </div>
+        <label id="otherLabel" style="display: none;">Indícanos tu motivo en este campo:</label>
+        <textarea class="form-control" id="otherText" name="otherText" rows="3" style="display: none;"></textarea>
+        <input type="hidden" id="claimDescription" name="claimDescription">
+    </div>
+    {% if error_message %}
+        <div class="alert alert-danger">
+            {{ error_message }}
+        </div>
+    {% endif %}
+    <button type="submit" class="btn btn-secondary">Reclamar Pedido</button>
+</form>
+
+<script>
+    var buttons = document.querySelectorAll('.claimButton');
+    var claimDescription = document.getElementById('claimDescription');
+    var otherText = document.getElementById('otherText');
+    
+    buttons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            buttons.forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+            var isOther = this.getAttribute('data-value') === 'Otro';
+            otherText.style.display = isOther ? 'block' : 'none';
+            document.getElementById('otherLabel').style.display = isOther ? 'block' : 'none';
+            if (isOther) {
+                claimDescription.value = otherText.value;
+            } else {
+                claimDescription.value = this.getAttribute('data-value');
+            }
+        });
+    });
+    
+    otherText.addEventListener('input', function() {
+        if (document.querySelector('.claimButton.active').getAttribute('data-value') === 'Otro') {
+            claimDescription.value = this.value;
+        }
+    });
+</script>
+{% endblock content %}

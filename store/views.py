@@ -349,12 +349,11 @@ def track_order(request, tracking_id):
         order = get_object_or_404(Order, tracking_id=tracking_id)
         order_items = OrderItem.objects.filter(order=order)
         order_products = [item.product_size.product.id for item in order_items]
+        claimed_products = Claim.objects.filter(order=order).values_list('product_id', flat=True)
         user_ratings = Rating.objects.filter(customer=request.user.customer, product_id__in=order_products).values_list('product_id', flat=True)
-        print(user_ratings)
-        # Calcular el costo total del pedido
         total_cost = order.get_cart_total
 
-        context = {'order': order, 'order_items': order_items, 'total_cost': total_cost, 'cartItems': cart['cartItems'],'user_ratings': user_ratings}
+        context = {'order': order, 'order_items': order_items, 'total_cost': total_cost, 'cartItems': cart['cartItems'],'user_ratings': user_ratings, 'claimed_products': claimed_products}
     except Order.DoesNotExist:
         return render(request, 'store/track_order.html', {'error_message': f'No existe un pedido con ID de seguimiento {tracking_id}.'})
 
@@ -391,3 +390,27 @@ def review_order(request, product_id):
 
     context = {'product':product, 'cartItems': cart['cartItems'],'error_message': error_message}
     return render(request, 'store/review_order.html', context)
+
+@login_required
+def claim_product(request, product_id,order_id):
+    cart = cartData(request)
+    product = get_object_or_404(Product, id=product_id)
+    order = get_object_or_404(Order, id=order_id)
+    error_message = None
+    if request.method == 'POST':
+        description = request.POST.get('claimDescription')
+        if not description:
+            error_message = 'Debes proporcionar una descripción.'
+        else:
+            claim = Claim.objects.create(
+                order=order,
+                product=product,
+                customer=request.user.customer,
+                description=description
+            )
+            claim.save()
+            messages.success(request, 'Tu reclamación ha sido enviada.')
+            return redirect('view_orders')
+
+    context = {'product':product,'order': order,  'cartItems': cart['cartItems'], 'error_message': error_message}
+    return render(request, 'store/claim_product.html', context)
