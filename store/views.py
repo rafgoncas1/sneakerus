@@ -32,6 +32,9 @@ def store(request):
 
     filters = {}
     filters_applied = ""
+
+    if not color_id and not size_id and 'marca' in request.session and not brand_id:
+        del request.session['marca']
     if color_id:
         color = colors.get(id=color_id)
         filters['productcolor__color__id'] = color_id
@@ -40,6 +43,10 @@ def store(request):
         size = sizes.get(id=size_id)
         filters['productsize__size__id'] = size_id
         filters_applied += f"Talla: {size.name}. "
+    if 'marca' in request.session and not brand_id:
+        brand_id = request.session['marca']
+    elif brand_id:
+        request.session['marca'] = brand_id
     if brand_id:
         brand = brands.get(id=brand_id)
         filters['brand__id'] = brand_id
@@ -47,6 +54,15 @@ def store(request):
     
     cart = cartData(request)
 
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
     products = Product.objects.filter(name__icontains=query, **filters)
 
     context = {

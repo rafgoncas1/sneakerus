@@ -292,3 +292,7 @@ footer a:hover {
 	color: #39696e;
 	text-decoration: underline;
 }
+
+.form-control {
+    width: 100%;
+}
