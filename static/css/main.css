@@ -292,6 +292,7 @@ footer a:hover {
 	color: #39696e;
 	text-decoration: underline;
 }
+
 .rating {
     float:left;
 }
@@ -331,4 +332,8 @@ footer a:hover {
 .rating > input:checked ~ label:hover ~ label,
 .rating > label:hover ~ input:checked ~ label {
     color: gold;
+}
+
+.form-control {
+    width: 100%;
 }

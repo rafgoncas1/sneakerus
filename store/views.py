@@ -1,7 +1,7 @@
 
 from django.shortcuts import get_object_or_404, render, redirect
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from .models import *
 from .forms import LoginForm, PaymentDataForm, RegisterForm, CustomerForm, ShippingAddressForm
@@ -13,6 +13,7 @@ from django.http import JsonResponse
 import json
 import datetime
 import random
+from django.core.mail import send_mail
 import string
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
@@ -33,6 +34,9 @@ def store(request):
 
     filters = {}
     filters_applied = ""
+
+    if not color_id and not size_id and 'marca' in request.session and not brand_id:
+        del request.session['marca']
     if color_id:
         color = colors.get(id=color_id)
         filters['productcolor__color__id'] = color_id
@@ -41,6 +45,10 @@ def store(request):
         size = sizes.get(id=size_id)
         filters['productsize__size__id'] = size_id
         filters_applied += f"Talla: {size.name}. "
+    if 'marca' in request.session and not brand_id:
+        brand_id = request.session['marca']
+    elif brand_id:
+        request.session['marca'] = brand_id
     if brand_id:
         brand = brands.get(id=brand_id)
         filters['brand__id'] = brand_id
@@ -48,6 +56,15 @@ def store(request):
     
     cart = cartData(request)
 
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer = customer, status=Status.objects.get(name='No realizado'))
+        items = order.orderitem_set.all()
+        cartItems = order.get_cart_items
+    else:
+        items = []
+        order = {'get_cart_total': 0, 'get_cart_items': 0}
+        cartItems = order['get_cart_items']
     products = Product.objects.filter(name__icontains=query, **filters)
 
     context = {
@@ -325,10 +342,50 @@ def processOrder(request):
     shipping_address.save()
     order.shipping_address = shipping_address
     order.save()
-    
+
+    order_items = order.orderitem_set.all()
+    product_info_list = []
+
+    for order_item in order_items:
+        product_name = order_item.product_size.product.name
+        product_size = order_item.product_size.size.name
+        quantity = order_item.quantity
+        price = order_item.product_size.product.price 
+
+        product_info = f"Producto: {product_name}, Talla: {product_size}, Cantidad: {quantity}, Precio: {price}"
+        product_info_list.append(product_info)
+
+    full_product_info = "\n".join(product_info_list)
+    if request.user.is_authenticated:
+        user = request.user
+        customer = user.customer
+
+        customer_name = customer.name
+        customer_email = customer.email
+
+    enviar_correo(customer_email, customer_name, full_product_info, order.tracking_id, order.date_ordered)
+
     return JsonResponse({'tracking': tracking_id}, safe=False)
 
+def enviar_correo(email_destino, username, resume_order, id_pedido, fecha):
+    asunto = ' ¡Gracias por tu compra en SneakerUS!'
+    mensaje = f'Estimado/a {username},' '\n' \
+              f'Esperamos que este mensaje te encuentre bien. En nombre de todo el equipo de SneakerUS, queremos expresar nuestro más sincero agradecimiento por tu reciente compra en nuestra tienda en línea.' '\n' \
+              f'Nos emociona saber que has elegido SneakerUS para adquirir tus zapatillas, y estamos comprometidos a brindarte la mejor experiencia de compra posible. Valoramos tu confianza en nuestros productos y servicios.' '\n' \
+              f'Detalles de tu pedido:' '\n' \
+              f'Número de seguimiento: {id_pedido}\n' \
+              f'Fecha de compra: {fecha}\n' \
+              f'Resumen de su pedido: {resume_order}\n' \
+              f'Si tienes alguna pregunta sobre tu pedido o necesitas asistencia adicional, no dudes en ponerte en contacto con nuestro equipo de atención al cliente. Estamos aquí para ayudarte en cualquier momento.\n' \
+              f'Además, nos gustaría invitarte a seguirnos en nuestras redes sociales para estar al tanto de las últimas novedades, lanzamientos y ofertas especiales.\n' \
+              f'Agradecemos tu apoyo continuo a SneakerUS. Nos esforzamos por proporcionarte productos de alta calidad y una experiencia de compra excepcional.\n' \
+              f'Esperamos que disfrutes al máximo tus nuevas zapatillas. ¡Gracias por formar parte de la comunidad de SneakerUS!'
 
+    remitente = 'sneakerUS@outlook.es'
+    destinatarios = [email_destino]
+
+    send_mail(asunto, mensaje, remitente, destinatarios)
+    return HttpResponse('Correo enviado exitosamente.')
 def track_orders(request):
     cart = cartData(request)
     if request.method == 'POST':

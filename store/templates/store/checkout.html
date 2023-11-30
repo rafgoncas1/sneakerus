@@ -61,6 +61,8 @@
                               <input type="checkbox" id="express-delivery" name="express" placeholder="false">
                               <label for="express-delivery">Entrega Express <strong>+5.00€</strong></label>
                          </div>
+                         <input type="hidden" id="order-total" value="{{order.get_cart_total|floatformat:2}}">
+
                     </div>
 
                     <hr>
@@ -87,12 +89,35 @@
                          </td>
                     </tr>
                     <tr style="margin-top: 15px;">
-                         <td>
-                              Paypal: 
-                         </td>
-                         <td style="padding-left: 30px;">
-                              <button class="btn btn-success rounded-2" style="width: 150px;">Paypal</button>
-                         </td>
+
+                         <div id="paypal-button-container"></div>
+                         <script src="https://www.paypal.com/sdk/js?client-id=AWZIJZa9rY5wUizrK6KfqFV1HtdfvPkwB30pVJl_ybBn7JMhfz4xMXePPHWk5JKHgKAkX5B3ZXKeCxf1&currency=USD"></script>
+
+                         <script>
+                         paypal.Buttons({
+                              // Set up the transaction
+                              createOrder: function(data, actions) {
+                                   var orderTotal = document.getElementById('order-total').value;
+                                   var deliveryCost = document.getElementById('express-delivery').checked ? 5.00 : 0.00;
+                                   var totalWithDelivery = parseFloat(orderTotal) + parseFloat(deliveryCost);
+
+                                   return actions.order.create({
+                                       purchase_units: [{
+                                            amount: {
+                                               value: totalWithDelivery.toFixed(2)
+                                            }
+                                        }]
+                                    });
+                                  },
+                                // Finalize the transaction
+                                onApprove: function(data, actions) {
+                                   return actions.order.capture().then(function(orderData) {
+                                        submitFormData();
+
+                                     });
+                                  }
+                         }).render('#paypal-button-container');
+                         </script>
                     </tr>
                </tbody>
                </table>
@@ -128,7 +153,22 @@
 
      window.onload = function(){
           document.getElementById('express-delivery').checked = false
-     }
+          var user = "{{ user }}";
+    if (user !== 'AnonymousUser') {
+        // Si el usuario está autenticado, llenar automáticamente los campos del formulario
+        var username = "{{ request.user.customer.name }}";
+        var userEmail = "{{ request.user.email }}";
+
+        document.getElementById('form').name.value = username;
+        document.getElementById('form').email.value = userEmail;
+
+        // Deshabilitar los campos ya que están autocompletados
+        document.getElementById('user-info').querySelectorAll('input').forEach(function(input) {
+            input.disabled = true;
+        });
+    }
+}
+     
 
      if (user != 'AnonymousUser'){
           document.getElementById('user-info').innerHTML = ''

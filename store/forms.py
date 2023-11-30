@@ -50,6 +50,14 @@ class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
         fields = ['name', 'email']
+        labels = {
+            'name': 'Nombre',
+            'email': 'Correo'
+        }
+    def __init__(self, *args, **kwargs):
+        super(CustomerForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
 
 class ShippingAddressForm(forms.ModelForm):
     zipcode = forms.CharField(label='Código Postal',
@@ -63,6 +71,11 @@ class ShippingAddressForm(forms.ModelForm):
             'state': 'Comunidad Autónoma',
             'country': 'País',
         }
+
+    def __init__(self, *args, **kwargs):
+        super(ShippingAddressForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
 
 class PaymentDataForm(forms.ModelForm):
     expiry_date = forms.DateField(
@@ -83,3 +96,5 @@ class PaymentDataForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PaymentDataForm, self).__init__(*args, **kwargs)
         self.fields['expiry_date'].widget.attrs.update({'placeholder': 'YYYY-MM-DD'})
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
