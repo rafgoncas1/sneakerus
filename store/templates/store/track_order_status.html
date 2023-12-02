@@ -54,9 +54,9 @@
                                             <button class="btn btn-secondary" disabled>Ya has opinado sobre el producto</button>
                                         {% endif %}
                                         {% if item.product_size.product.id not in claimed_products %}
-                                            <a href="{% url 'claim_product' product_id=item.product_size.product_id order_id=order.id %}" class="btn btn-warning">Reclamar Pedido</a>
+                                            <a href="{% url 'claim_product' product_id=item.product_size.product_id order_id=order.id %}" class="btn btn-danger">Reclamar Pedido</a>
                                         {% else %}
-                                            <button class="btn btn-warning" disabled>Producto ya reclamado</button>
+                                            <button class="btn btn-danger" disabled>Producto ya reclamado</button>
                                         {% endif %}
                                     </div>
                                 </li>

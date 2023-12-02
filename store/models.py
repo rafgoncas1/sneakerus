@@ -197,13 +197,10 @@ class PaymentData(models.Model):
         verbose_name_plural = 'Payment data'
 
 class Rating(models.Model):
-    product = models.OneToOneField(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, null=True, on_delete=models.SET_NULL)
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
     comment = models.TextField()
-
-    class Meta:
-        unique_together = ('product', 'customer')
 
 class Claim(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)

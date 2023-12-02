@@ -420,7 +420,7 @@ def track_order(request, tracking_id):
 def view_orders(request):
     cart = cartData(request)
     # orders with status distinct from 'No realizado'
-    user_orders = Order.objects.exclude(status=Status.objects.get(name='No realizado')).order_by('-date_ordered')
+    user_orders = Order.objects.filter(customer=request.user.customer).exclude(status=Status.objects.get(name='No realizado')).order_by('-date_ordered')
     context = {'user_orders': user_orders, 'cartItems': cart['cartItems']}
     return render(request, 'store/view_orders.html', context)
 
