@@ -37,8 +37,10 @@
   <p><strong>Promedio de valoraciones:</strong> {{ average_rating|floatformat:2 }}</p>
   <div>
     {% for rating in ratings %}
-    <div>
-      <p><strong>Valoración:</strong> 
+    <br>
+    <div id="marca">
+      <p><strong>Valoración de {{ rating.customer.name }}:</strong></p>
+      <p>
           {% for i in "12345"|make_list %}
             {% if i|add:0 <= rating.rating %}
               <span class="rating"><input type="radio" name="star{{ forloop.parentloop.counter }}{{ forloop.counter }}" checked/><label for="star"></label></span>
@@ -46,9 +48,9 @@
               <span class="rating"><input type="radio" name="star{{ forloop.parentloop.counter }}{{ forloop.counter }}"/><label for="star"></label></span>
             {% endif %}
           {% endfor %}
-          {{ rating.customer.name }}
       </p>
-      <p> {{ rating.comment }}</p>
+      <br><br>
+      <p>{{ rating.comment }}</p>
     </div>
     {% endfor %}
 </div>
