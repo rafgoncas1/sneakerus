@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from .models import *
-from .forms import LoginForm, PaymentDataForm, RegisterForm, CustomerForm, ShippingAddressForm
+from .forms import LoginForm, RegisterForm, CustomerForm, ShippingAddressForm
 from django.contrib.auth import login, logout
 from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -186,20 +186,6 @@ def create_update_delivery(request):
             new_shipping_address.save()
             return redirect('store')
     return render(request, 'store/delivery_form.html', {'form': form, 'customer': customer, 'cartItems': cart['cartItems']})
-
-@login_required
-def create_update_payment(request):
-    cart = cartData(request)
-    customer = request.user.customer
-    payment_data = customer.paymentdata_set.last()
-    form = PaymentDataForm(request.POST or None, instance=payment_data)
-    if request.method == 'POST':
-        if form.is_valid():
-            new_payment_data = form.save(commit=False)
-            new_payment_data.customer = customer
-            new_payment_data.save()
-            return redirect('store')
-    return render(request, 'store/payment_form.html', {'form': form, 'customer': customer, 'cartItems': cart['cartItems']})
 
 def user_has_perm(user):
     if not user.is_staff:

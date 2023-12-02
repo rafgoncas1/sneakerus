@@ -182,20 +182,6 @@ class OrderItem(models.Model):
     def get_total(self):
         return self.product_size.product.price * self.quantity
 
-class PaymentData(models.Model):
-    customer = models.ForeignKey(Customer, null=True, on_delete=models.SET_NULL)
-    cardholder_name = models.CharField(max_length=100)
-    card_number = models.CharField(max_length=16)
-    expiry_date = models.DateField()
-    cvv = models.CharField(max_length=3)
-
-    def __str__(self):
-        return self.cardholder_name
-
-    class Meta:
-        verbose_name = 'Payment data'
-        verbose_name_plural = 'Payment data'
-
 class Rating(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, null=True, on_delete=models.SET_NULL)
