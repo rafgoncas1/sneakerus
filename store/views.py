@@ -18,6 +18,8 @@ import string
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from .utils import cookieCart, cartData
+from django.db.models import Avg
+
 
 def store(request):
     query = request.GET.get('q', '')
@@ -111,10 +113,12 @@ def productDetails(request, producto_id):
         
     producto = get_object_or_404(Product, pk=producto_id)
     colors = producto.productcolor_set.all()
+    average_rating = Rating.objects.filter(product=producto).aggregate(Avg('rating'))['rating__avg']
+    ratings = Rating.objects.filter(product=producto)
 
     # sizes ordered by name
     sizes = producto.productsize_set.all().order_by('size__name')
-    return render(request, 'store/product.html', {'product': producto, 'colors': colors, 'sizes': sizes, 'cartItems': cart['cartItems']})
+    return render(request, 'store/product.html', {'product': producto, 'colors': colors, 'sizes': sizes, 'cartItems': cart['cartItems'],'average_rating': average_rating, 'ratings': ratings})
 
 
 def auth_login(request):
@@ -401,11 +405,12 @@ def track_order(request, tracking_id):
     try:
         order = get_object_or_404(Order, tracking_id=tracking_id)
         order_items = OrderItem.objects.filter(order=order)
-
-        # Calcular el costo total del pedido
+        order_products = [item.product_size.product.id for item in order_items]
+        claimed_products = Claim.objects.filter(order=order).values_list('product_id', flat=True)
+        user_ratings = Rating.objects.filter(customer=request.user.customer, product_id__in=order_products).values_list('product_id', flat=True)
         total_cost = order.get_cart_total
 
-        context = {'order': order, 'order_items': order_items, 'total_cost': total_cost, 'cartItems': cart['cartItems']}
+        context = {'order': order, 'order_items': order_items, 'total_cost': total_cost, 'cartItems': cart['cartItems'],'user_ratings': user_ratings, 'claimed_products': claimed_products}
     except Order.DoesNotExist:
         return render(request, 'store/track_order.html', {'error_message': f'No existe un pedido con ID de seguimiento {tracking_id}.'})
 
@@ -419,3 +424,50 @@ def view_orders(request):
     context = {'user_orders': user_orders, 'cartItems': cart['cartItems']}
     return render(request, 'store/view_orders.html', context)
 
+@login_required
+def review_order(request, product_id):
+    cart = cartData(request)
+    product = get_object_or_404(Product, id=product_id)
+    error_message = None
+    if request.method == 'POST':
+        rating_value = request.POST.get('rating')
+        comment = request.POST.get('comment')
+        if not rating_value:
+            error_message = 'Debes proporcionar una valoración.'
+        else:
+            rating = Rating.objects.create(
+                product=product,
+                customer=request.user.customer,
+                rating=rating_value,
+                comment=comment
+            )
+            rating.save()
+            messages.success(request, 'Tu valoración ha sido enviada.')
+            return redirect('view_orders')
+
+    context = {'product':product, 'cartItems': cart['cartItems'],'error_message': error_message}
+    return render(request, 'store/review_order.html', context)
+
+@login_required
+def claim_product(request, product_id,order_id):
+    cart = cartData(request)
+    product = get_object_or_404(Product, id=product_id)
+    order = get_object_or_404(Order, id=order_id)
+    error_message = None
+    if request.method == 'POST':
+        description = request.POST.get('claimDescription')
+        if not description:
+            error_message = 'Debes proporcionar una descripción.'
+        else:
+            claim = Claim.objects.create(
+                order=order,
+                product=product,
+                customer=request.user.customer,
+                description=description
+            )
+            claim.save()
+            messages.success(request, 'Tu reclamación ha sido enviada.')
+            return redirect('view_orders')
+
+    context = {'product':product,'order': order,  'cartItems': cart['cartItems'], 'error_message': error_message}
+    return render(request, 'store/claim_product.html', context)
