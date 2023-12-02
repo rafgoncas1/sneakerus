@@ -79,11 +79,6 @@
                           {% else %}
                               <li><a class="dropdown-item" href="{% url 'create_update_delivery' %}">Establecer datos de entrega</a></li>
                           {% endif %}
-                          {% if user.customer.paymentdata_set.exists %}
-                              <li><a class="dropdown-item" href="{% url 'create_update_payment' %}">Modificar forma de pago</a></li>
-                          {% else %}
-                              <li><a class="dropdown-item" href="{% url 'create_update_payment' %}">Establecer forma de pago</a></li>
-                          {% endif %}
                           <li><hr class="dropdown-divider"></li>
                           <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
                       </ul>
