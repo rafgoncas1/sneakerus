@@ -396,7 +396,10 @@ def track_order(request, tracking_id):
         order_items = OrderItem.objects.filter(order=order)
         order_products = [item.product_size.product.id for item in order_items]
         claimed_products = Claim.objects.filter(order=order).values_list('product_id', flat=True)
-        user_ratings = Rating.objects.filter(customer=request.user.customer, product_id__in=order_products).values_list('product_id', flat=True)
+        if request.user.is_authenticated:
+            user_ratings = Rating.objects.filter(customer=request.user.customer, product_id__in=order_products).values_list('product_id', flat=True)
+        else:
+            user_ratings = []
         total_cost = order.get_cart_total
 
         context = {'order': order, 'order_items': order_items, 'total_cost': total_cost, 'cartItems': cart['cartItems'],'user_ratings': user_ratings, 'claimed_products': claimed_products}
