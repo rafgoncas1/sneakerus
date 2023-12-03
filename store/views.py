@@ -348,6 +348,9 @@ def processOrder(request):
 
         customer_name = customer.name
         customer_email = customer.email
+    else:
+        customer_name = body['form']['name']
+        customer_email = body['form']['email']
 
     enviar_correo(customer_email, customer_name, full_product_info, order.tracking_id, order.date_ordered)
 
