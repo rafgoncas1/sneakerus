@@ -26,7 +26,7 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-if DEBUG:
+if not DEBUG:
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
