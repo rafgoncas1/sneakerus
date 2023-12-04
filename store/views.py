@@ -359,15 +359,13 @@ def processOrder(request):
 def enviar_correo(email_destino, username, resume_order, id_pedido, fecha):
     asunto = ' ¡Gracias por tu compra en SneakerUS!'
     mensaje = f'Estimado/a {username},' '\n' \
-              f'Esperamos que este mensaje te encuentre bien. En nombre de todo el equipo de SneakerUS, queremos expresar nuestro más sincero agradecimiento por tu reciente compra en nuestra tienda en línea.' '\n' \
-              f'Nos emociona saber que has elegido SneakerUS para adquirir tus zapatillas, y estamos comprometidos a brindarte la mejor experiencia de compra posible. Valoramos tu confianza en nuestros productos y servicios.' '\n' \
+              f'En nombre de todo el equipo de SneakerUS, queremos expresar nuestro más sincero agradecimiento por tu reciente compra en nuestra tienda en línea.' '\n' '\n' \
+              f'Nos emociona saber que has elegido SneakerUS para adquirir tus zapatillas, y estamos comprometidos a brindarte la mejor experiencia de compra posible. Valoramos tu confianza en nuestros productos y servicios.' '\n' '\n' \
               f'Detalles de tu pedido:' '\n' \
               f'Número de seguimiento: {id_pedido}\n' \
               f'Fecha de compra: {fecha}\n' \
-              f'Resumen de su pedido: {resume_order}\n' \
+              f'Resumen de su pedido: {resume_order}\n' '\n'\
               f'Si tienes alguna pregunta sobre tu pedido o necesitas asistencia adicional, no dudes en ponerte en contacto con nuestro equipo de atención al cliente. Estamos aquí para ayudarte en cualquier momento.\n' \
-              f'Además, nos gustaría invitarte a seguirnos en nuestras redes sociales para estar al tanto de las últimas novedades, lanzamientos y ofertas especiales.\n' \
-              f'Agradecemos tu apoyo continuo a SneakerUS. Nos esforzamos por proporcionarte productos de alta calidad y una experiencia de compra excepcional.\n' \
               f'Esperamos que disfrutes al máximo tus nuevas zapatillas. ¡Gracias por formar parte de la comunidad de SneakerUS!'
 
     remitente = 'sneakerUS@outlook.es'
