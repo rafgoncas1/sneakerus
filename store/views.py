@@ -149,7 +149,9 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            Customer.objects.create(user=user, email=user.email, name=form.cleaned_data['name'])
+            customer, created = Customer.objects.get_or_create(email=user.email, name=form.cleaned_data['name'])
+            customer.user = user
+            customer.save()
             login(request, user)
             return redirect('store')
         else:
