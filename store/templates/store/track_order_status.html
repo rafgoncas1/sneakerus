@@ -1,0 +1,84 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+    <div class="container mt-5">
+        <h2 class="mb-4">Estado del Pedido - {{ order.tracking_id }}</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Información del Pedido</h5>
+                        <p class="card-text">Estado: <strong>{{ order.status}}</strong></p>
+                        {% if order.fast_delivery %}
+                        <p class="card-text">Tipo de entrega: <strong>Entrega Express</strong></p>
+                        {% else %}
+                        <p class="card-text">Tipo de entrega: <strong>Entrega Estándar</strong></p>
+                        {% endif %}
+                        <p class="card-text">Fecha de Pedido: <strong>{{ order.date_ordered|date:"F d, Y H:i" }}</strong></p>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Información de entrega</h5>
+                        <p class="card-text">Dirección: <strong>{{ order.shipping_address.address}}</strong></p>
+                        <p class="card-text">Ciudad: <strong> {{order.shipping_address.city}}</strong></p>
+                        <p class="card-text">Comunidad autónoma: <strong>{{order.shipping_address.state}} </strong></p>
+                        <p class="card-text">Código postal: <strong>{{order.shipping_address.zipcode}}</strong></p>
+                        <p class="card-text">País: <strong>{{ order.shipping_address.country}}</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Productos en el Pedido</h5>
+                        <ul class="list-group">
+                            {% for item in order_items %}
+                                <li class="list-group-item">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            {% if item.product_size.product.image %}
+                                                <img src="{{ item.product_size.product.image.url }}" alt="{{ item.product_size.product.name }}" class="img-fluid">
+                                            {% else %}
+                                                <img src="{% static 'images/placeholder.png' %}" alt="Placeholder" class="img-fluid">
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-9">
+                                                <p><strong>{{ item.product_size.product.name }}</strong> | {{item.product_size.size.name}}</p>
+                                                <p>Cantidad: {{ item.quantity }} x {{ item.product_size.product.price|floatformat:2 }}€</p> 
+                                        </div>
+                                        {% if order.status.name == 'Entregado' and item.product_size.product.id not in user_ratings %}
+                                            <a href="{% url 'review_order' product_id=item.product_size.product_id %}" class="btn btn-secondary">Opinar</a>
+                                        {% elif order.status.name == 'Entregado' %}
+                                            <button class="btn btn-secondary" disabled>Ya has opinado sobre el producto</button>
+                                        {% endif %}
+                                        {% if item.product_size.product.id not in claimed_products %}
+                                            <a href="{% url 'claim_product' product_id=item.product_size.product_id order_id=order.id %}" class="btn btn-danger">Reclamar Pedido</a>
+                                        {% else %}
+                                            <button class="btn btn-danger" disabled>Producto ya reclamado</button>
+                                        {% endif %}
+                                    </div>
+                                </li>
+                            {% endfor %}
+                            {% if order.fast_delivery %}
+                                <li class="list-group-item">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <img src="{% static 'images/express-delivery.png' %}" alt="Express Delivery" class="img-fluid">
+                                        </div>
+                                        <div class="col-md-9">
+                                            <p><strong>Entrega Express</strong></p>
+                                            <p>Coste: 5.00€</p>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        <p class="mt-3">Costo Total del Pedido: <strong>{{ total_cost|floatformat:2 }}€</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

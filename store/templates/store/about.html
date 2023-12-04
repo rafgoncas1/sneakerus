@@ -1,0 +1,44 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+    }
+
+    section {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    section h2 {
+        color: #333;
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+
+    section p {
+        color: #555;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+</style>
+<section>
+    <h2>Bienvenido a la Universidad de Sevilla</h2>
+    <p>Quinientos años de historia han convertido a la Universidad de Sevilla en una institución educativa de referencia para el conocimiento en España.</p>
+    <p>Gracias a su trayectoria, a su estructura y al equipo humano que le da alma, la Universidad de Sevilla es hoy una referencia en el sistema universitario español y europeo. Los más de 70.000 alumnos matriculados el último curso así lo corroboran, convirtiéndola en la segunda universidad española y la primera andaluza en número de matriculaciones en su centenar de grados y más de 160 másteres. Su compromiso con el conocimiento y la contribución al progreso la hacen destacar también en la generación de patentes, área en el que ostenta el segundo puesto a nivel nacional.</p>
+    <p>La US es además una ciudad dentro de la ciudad. Para albergar a todos sus usuarios la Universidad de Sevilla cuenta con uno de los campus más modernos y accesibles, con más de 32 centros y 80.000 m² de instalaciones deportivas. Destaca su servicio de asistencia a la comunidad universitaria que ofrece una atención personalizada para facilitar información y asesoramiento. La universidad es también indispensable para entender la cultura y el patrimonio de Sevilla, pues muchos de sus edificios son esenciales para la riqueza arquitectónica e histórica de la ciudad.</p>
+    <p>Podrás encontrarnos en Av. Reina Mercedes, s/n, 41012 Sevilla</p>
+    <img src="{% static 'images/logo-US.png' %}" alt="Logo US" style="display: block; margin: auto; width: 279px;">
+</section>
+
+{% endblock content %}

@@ -1,0 +1,68 @@
+{% extends 'store/main.html' %}
+{% load static %}
+
+{% block content %}
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-6">
+        {% if product.image %}
+          <img class="img-fluid" src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+          <img class="img-fluid" src="{% static 'products/placeholder.png' %}" alt="{{ product.name }}">
+        {% endif %}
+      </div>
+      <div class="col-md-6">
+        <h2>{{ product.name }}</h2>
+        <h4 v-if="{{product.brand}}"> {{product.brand}}</h4>
+        <p><strong>Precio:</strong> {{ product.price|floatformat:2 }} €</p>
+        <p><strong>Descripción:</strong> {{ product.description }}</p>
+        <p><strong>Detalles:</strong> {{product.details}}</p>
+        <p><strong>
+          {% for color in colors %}
+            <span >{{ color.color }}</span> /
+          {% endfor %}
+        </strong></p>
+        <div id="sizes-container" style="padding-bottom: 10px">
+          {% for size in sizes %}
+            <button class="size-btn" data-stock="{{ size.stock }}">{{ size.size }}</button>
+          {% endfor %}
+        </div>
+        <div style="flex-direction: column;">
+          <button data-product="{{product.id}}" data-action="add" data-quantity="1" class="btn btn-outline-success add-btn update-cart" disabled>Añadir al Carrito</button>
+          <input id="quantity-input" type="number" value="1" min="1" style="width: 50px; margin-top: 10px">
+        </div>
+      </div>
+    </div>
+  </div>
+  <p><strong>Promedio de valoraciones:</strong> {{ average_rating|floatformat:2 }}</p>
+  <div>
+    {% for rating in ratings %}
+    <br>
+    <div id="marca">
+      <p><strong>Valoración de {{ rating.customer.name }}:</strong></p>
+      <p>
+          {% for i in "12345"|make_list %}
+            {% if i|add:0 <= rating.rating %}
+              <span class="rating"><input type="radio" name="star{{ forloop.parentloop.counter }}{{ forloop.counter }}" checked/><label for="star"></label></span>
+            {% else %}
+              <span class="rating"><input type="radio" name="star{{ forloop.parentloop.counter }}{{ forloop.counter }}"/><label for="star"></label></span>
+            {% endif %}
+          {% endfor %}
+      </p>
+      <br><br>
+      <p>{{ rating.comment }}</p>
+    </div>
+    {% endfor %}
+</div>
+  <script type="text/javascript" src="{% static 'js/product.js' %}"></script>
+  <script type="text/javascript" src="{% static 'js/cart.js' %}"></script>
+  <script>
+    document.getElementById('quantity-input').addEventListener('input', function(e) {
+        document.getElementsByClassName('update-cart')[0].setAttribute('data-quantity', e.target.value);
+    });
+    window.onload = function() {
+      document.getElementById('quantity-input').value = 1;
+      document.getElementsByClassName('update-cart')[0].setAttribute('disabled', true); 
+    };
+  </script>
+{% endblock content %}

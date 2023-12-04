@@ -1,0 +1,76 @@
+{% extends 'store/main.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <div class="col-lg-3">
+        <form action="/" method="get">
+            <input type="hidden" name="q" value="{{ query }}">
+            <input type="hidden" name="color" value="{{ color }}">
+            <input type="hidden" name="talla" value="{{ talla }}">
+            <div id="marca">
+                <p>Marca:</p>
+                {% for brand in brands %}
+                    <input type="checkbox" id="{{ brand.name }}" name="marca" value="{{ brand.id }}" onchange="this.form.submit()">
+                    <label for="{{ brand.name }}">{{ brand.name }}</label><br>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-9">
+        {% if query %}
+            <h2>Tu búsqueda de: "{{ query }}"</h2>
+        {% else %}
+            <h2>Todos los productos:</h2>
+        {% endif %}
+        <form action="/" method="get">
+            <input type="hidden" name="q" value="{{ query }}">
+            <input type="hidden" name="marca" value="{{ marca }}">
+            <select id="color" name="color">
+                <option value="">Color</option>
+                {% for color in colors %}
+                    <option value="{{ color.id }}">{{ color.name }}</option>
+                {% endfor %}
+            </select>
+            <select id="talla" name="talla">
+                <option value="">Talla</option>
+                {% for size in sizes %}
+                    <option value="{{ size.id }}">{{ size.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Aplicar filtros" class="filter-submit">
+            {% if filters_applied %}
+                <a href="/" class="btn btn-danger">Borrar filtros</a>
+            {% endif %}
+        </form>
+        <p>{{ filters_applied }}</p>
+        {% if products|length == 0 %}
+            <p>No se encontraron productos.</p>
+        {% elif products|length > 1 %}
+            <p>[{{ products|length }} resultados]</p>
+        {% else %}
+            <p>[{{ products|length }} resultado]</p>
+        {% endif %}
+    </div>
+    {% for product in products %}
+        <div class="col-lg-4">
+            <a href="{% url 'details' product.id %}">
+                {% if product.image %}
+                    <img class="thumbnail" src="{{ product.image.url }}">
+                {% else %}
+                    <img class="thumbnail" src="/products/placeholder.png">
+                {% endif %}
+            </a>
+            <div class="box-element product">
+                <h6><strong>{{product.name}}</strong></h6>
+                <hr>
+                <a href="{% url 'details' product.id %}">
+                    <button class="btn btn-outline-secondary add-btn">Ver producto</button>
+                </a>
+                <h4 style="display: inline-block; float: right;"><strong>
+                    {{product.price|floatformat:2}} €
+                </strong></h4>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock content %}
