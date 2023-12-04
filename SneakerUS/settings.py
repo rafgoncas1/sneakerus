@@ -44,7 +44,7 @@ if not DEBUG:
     }
 
 
-ALLOWED_HOSTS = ["localhost", "sneakerus.onrender.com"]
+ALLOWED_HOSTS = ["localhost", "sneakerus.onrender.com","0.0.0.0"]
 
 
 # Application definition
