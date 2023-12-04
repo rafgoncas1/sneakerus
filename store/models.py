@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import UserManager
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
+from django.core.validators import MinValueValidator
 
 # Create your models here.
 
@@ -59,8 +60,8 @@ class SneakerUser(AbstractBaseUser, PermissionsMixin):
 
 class Customer(models.Model):
     user = models.OneToOneField(SneakerUser, null=True, blank=True, on_delete = models.CASCADE)
-    name = models.CharField(max_length=30 , null=True)
-    email = models.CharField(max_length=60 , null=True)
+    name = models.CharField(max_length=200 , null=False, blank=False)
+    email = models.EmailField(max_length=200 , null=True, blank=False)
 
     def __str__(self):
         return self.name
@@ -89,7 +90,7 @@ class ProductColor(models.Model):
     color = models.ForeignKey('Color', null=True, on_delete = models.SET_NULL)
     
     def __str__(self):
-        return str(self.color)
+        return str(self.product) + ' ' + str(self.color)
 
     class Meta:
         verbose_name = 'Product color'
@@ -99,10 +100,10 @@ class ProductColor(models.Model):
 class ProductSize(models.Model):
     product = models.ForeignKey('Product', null=True, on_delete = models.SET_NULL)
     size = models.ForeignKey('Size', null=True, on_delete = models.SET_NULL)
-    stock = models.IntegerField(default=0, null=True, blank=True)
+    stock = models.IntegerField(default=0, null=False, blank=False, validators=[MinValueValidator(0)])
     
     def __str__(self):
-        return str(self.size)
+        return str(self.product) + ' ' + str(self.size)
 
     class Meta:
         verbose_name = 'Product size'
@@ -110,8 +111,8 @@ class ProductSize(models.Model):
         ordering = ['product', 'size']
 
 class Product(models.Model):
-    name = models.CharField(max_length=50 , null=True)
-    price = models.FloatField()
+    name = models.CharField(max_length=200 , null=False, blank=False)
+    price = models.DecimalField(max_digits=7, decimal_places=2, null=False, blank=False, validators=[MinValueValidator(0)])
     brand = models.ForeignKey(Brand, null=True, on_delete = models.SET_NULL)
     image = models.ImageField(null=True, blank=True)
     description = models.CharField(max_length=200 , null=True)
@@ -133,11 +134,30 @@ class Status(models.Model):
         verbose_name_plural = 'Status'
         ordering = ['name']
 
+class ShippingAddress(models.Model):
+    customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
+    address = models.CharField(max_length=200 , null=False, blank=False)
+    city = models.CharField(max_length=200 , null=False, blank=False)
+    state = models.CharField(max_length=200 , null=False, blank=False)
+    zipcode = models.CharField(max_length=200 , null=False, blank=False)
+    country = models.CharField(max_length=200 , null=False, blank=False)
+    date_added = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.address
+
+    class Meta:
+        verbose_name = 'Shipping address'
+        verbose_name_plural = 'Shipping addresses'
+        ordering = ['-date_added']
+
 class Order(models.Model):
     customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
     date_ordered = models.DateTimeField(auto_now_add=True)
-    status = models.ForeignKey(Status, null=True, on_delete = models.SET_NULL)
-    tracking_id=models.CharField(max_length=30 , null=True, unique=True)
+    status = models.ForeignKey(Status, null=False, on_delete =models.CASCADE)
+    tracking_id=models.CharField(max_length=200 , null=True, unique=True, blank=False)
+    fast_delivery = models.BooleanField(default=False, null=True, blank=False)
+    shipping_address = models.ForeignKey('ShippingAddress', null=True, on_delete = models.SET_NULL)
 
     def __str__(self):
         return str(self.id)
@@ -150,46 +170,33 @@ class Order(models.Model):
     @property
     def get_cart_total(self):
         orderitems = self.orderitem_set.all()
-        return sum([item.get_total for item in orderitems])
+        return sum([item.get_total for item in orderitems]) + (5 if self.fast_delivery else 0)
     
 class OrderItem(models.Model):
     product_size = models.ForeignKey(ProductSize, null=True, on_delete = models.SET_NULL)
     order = models.ForeignKey(Order, null=True, on_delete = models.SET_NULL)
-    quantity = models.IntegerField(default=0, null=True, blank=True)
+    quantity = models.IntegerField(default=0, null=True, blank=True, validators=[MinValueValidator(0)])
     date_added = models.DateTimeField(auto_now_add=True)
 
     @property
     def get_total(self):
         return self.product_size.product.price * self.quantity
 
-class ShippingAddress(models.Model):
-    customer = models.ForeignKey(Customer, null=True, on_delete = models.SET_NULL)
-    order = models.ForeignKey(Order, null=True, blank=True, on_delete = models.SET_NULL)
-    address = models.CharField(max_length=60 , null=True)
-    city = models.CharField(max_length=30 , null=True)
-    state = models.CharField(max_length=30 , null=True)
-    zipcode = models.CharField(max_length=10 , null=True)
-    country = models.CharField(max_length=30 , null=True)
-    date_added = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return self.address
-
-    class Meta:
-        verbose_name = 'Shipping address'
-        verbose_name_plural = 'Shipping addresses'
-        ordering = ['-date_added']
-
-class PaymentData(models.Model):
+class Rating(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, null=True, on_delete=models.SET_NULL)
-    cardholder_name = models.CharField(max_length=100)
-    card_number = models.CharField(max_length=16)
-    expiry_date = models.DateField()
-    cvv = models.CharField(max_length=3)
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    comment = models.TextField()
 
-    def __str__(self):
-        return self.cardholder_name
+class Claim(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    description = models.TextField()
+    date_submitted = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Payment data'
-        verbose_name_plural = 'Payment data'
+        unique_together = ('product', 'order')
+
+    def __str__(self):
+        return f'Claim {self.id} by {self.customer.email}'

@@ -11,6 +11,7 @@
     </head>
      <body>
         <script type="text/javascript">
+          var user = "{{ request.user }}";
           function getCookie(name) {
               var cookieValue = null;
               if (document.cookie && document.cookie !== '') {
@@ -26,6 +27,13 @@
               }
               return cookieValue;
           }
+          if(user == "AnonymousUser") {
+            var cart = JSON.parse(getCookie('cart'));
+            if(cart == undefined){
+              var cart = {};
+              document.cookie = 'cart=' + JSON.stringify(cart) + ";domain=;path=/"
+            }
+          }
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
         <nav class="navbar navbar-expand-lg bg-primary bg-body-tertiary" data-bs-theme="dark">
@@ -36,14 +44,16 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                  <a class="nav-link" href="/tracking">Seguimiento</a>
-                </li>
+                
                 {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="/orders">Pedidos</a>
                     </li>
-                    {% endif %}
+                {% else %}
+                  <li class="nav-item">
+                    <a class="nav-link" href="/tracking">Seguimiento</a>
+                  </li>
+                {% endif %}
               </ul>
               <form class="d-flex" action="/" method="get" role="search">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
@@ -69,11 +79,6 @@
                           {% else %}
                               <li><a class="dropdown-item" href="{% url 'create_update_delivery' %}">Establecer datos de entrega</a></li>
                           {% endif %}
-                          {% if user.customer.paymentdata_set.exists %}
-                              <li><a class="dropdown-item" href="{% url 'create_update_payment' %}">Modificar forma de pago</a></li>
-                          {% else %}
-                              <li><a class="dropdown-item" href="{% url 'create_update_payment' %}">Establecer forma de pago</a></li>
-                          {% endif %}
                           <li><hr class="dropdown-divider"></li>
                           <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
                       </ul>
@@ -92,14 +97,10 @@
                 {% endblock content %}
           </div>
         </main>
-
-        <div class="container">
-          <footer class="py-3 my-4 footer mt-auto">
-            <ul class="nav fixed-bottom justify-content-center border-bottom pb-3 mb-3">
-              <li class="nav-item"><a href="/" class="nav-link px-2 text-body-secondary">Inicio</a></li>
-              <li class="nav-item"><a href="/about" class="nav-link px-2 text-body-secondary">Conócenos</a></li>
-            </ul>
-          </footer>
-        </div>
+        <footer>
+            <a href="/">Inicio</a>
+            |
+            <a href="/about">Conócenos</a>
+        </footer>
     </body>
 </html>

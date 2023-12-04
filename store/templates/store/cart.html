@@ -24,6 +24,7 @@
             <div class="cart-row">
                 <div style="flex:2"></div>
                 <div style="flex:2"><strong>Producto</strong></div>
+                <div style="flex:1"><strong>Talla</strong></div>
                 <div style="flex:1"><strong>Precio</strong></div>
                 <div style="flex:1"><strong>Cantidad</strong></div>
                 <div style="flex:1"><strong>Total</strong></div>
@@ -41,6 +42,7 @@
                 </div>
                 
                 <div style="flex:2"><p>{{ item.product_size.product.name }}</p></div>
+                <div style="flex:1"><p>{{item.product_size.size.name}}</p></div>
                 <div style="flex:1"><p>{{item.product_size.product.price|floatformat:2}}€</p></div>
                 <div style="flex:1">
                     <p class="quantity">{{item.quantity}}</p>
@@ -48,7 +50,7 @@
                         
                         <img data-product="{{item.product_size.product.id}}" data-size="{{item.product_size.size.name}}" 
                         class="chg-quantity update-cart"  
-                        data-action="add" src="{% static  'images/arrow-up.png' %}">
+                        data-action="add" data-quantity="1" src="{% static  'images/arrow-up.png' %}">
                 
                         <img data-product="{{item.product_size.product.id}}" data-size="{{item.product_size.size.name}}" data-action="remove" 
                         class="chg-quantity update-cart" src="{% static  'images/arrow-down.png' %}">

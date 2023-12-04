@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.validators import validate_email
-from .models import Customer, PaymentData, ShippingAddress
+from .models import Customer, ShippingAddress
 from django.core.validators import MinLengthValidator, RegexValidator
 
 class LoginForm(forms.Form):
@@ -50,6 +50,14 @@ class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
         fields = ['name', 'email']
+        labels = {
+            'name': 'Nombre',
+            'email': 'Correo'
+        }
+    def __init__(self, *args, **kwargs):
+        super(CustomerForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
 
 class ShippingAddressForm(forms.ModelForm):
     zipcode = forms.CharField(label='Código Postal',
@@ -64,22 +72,7 @@ class ShippingAddressForm(forms.ModelForm):
             'country': 'País',
         }
 
-class PaymentDataForm(forms.ModelForm):
-    expiry_date = forms.DateField(
-        label='Fecha de Expiracion')
-    cvv = forms.CharField(
-        label='CVV',
-        validators=[RegexValidator(r'^\d{3}$', 'El CVV debe contener exactamente 3 dígitos.')])
-    card_number = forms.CharField(
-        label='Número de tarjeta',
-        validators=[RegexValidator(r'^\d{16}$', 'El número de tarjeta debe contener exactamente 16 dígitos.')])
-
-    class Meta:
-        model = PaymentData
-        fields = ['cardholder_name', 'card_number', 'expiry_date', 'cvv']
-        labels = {
-            'cardholder_name': 'Nombre del Titular',
-        }
     def __init__(self, *args, **kwargs):
-        super(PaymentDataForm, self).__init__(*args, **kwargs)
-        self.fields['expiry_date'].widget.attrs.update({'placeholder': 'YYYY-MM-DD'})
+        super(ShippingAddressForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'

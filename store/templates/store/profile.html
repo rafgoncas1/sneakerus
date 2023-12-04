@@ -22,14 +22,4 @@
   {% endif %}
   <br>
   <br>
-  {% if user.customer.paymentdata_set.exists %}
-    <h3>Datos de pago:</h3>
-    <ul>
-      <li>Nombre del titular: {{ user.customer.paymentdata_set.last.cardholder_name }}</li>
-      <li>Número de tarjeta: {{ user.customer.paymentdata_set.last.card_number }}</li>
-      <li>Fecha de vencimiento: {{ user.customer.paymentdata_set.last.expiry_date }}</li>
-    </ul>
-    <a href="{% url 'create_update_payment' %}" class="btn btn-outline-secondary add-btn">Modificar forma de pago</a>
-  {% else %}
-    <a href="{% url 'create_update_payment' %}" class="btn btn-outline-secondary add-btn">Establecer forma de pago</a>
-  {% endif %}{% endblock content %}
+{% endblock content %}

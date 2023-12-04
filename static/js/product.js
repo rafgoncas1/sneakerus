@@ -1,7 +1,7 @@
 var sizeButtons = document.getElementsByClassName('size-btn');
 var updateCart = document.querySelector('.update-cart');
 for (var i = 0; i < sizeButtons.length; i++) {
-  if (sizeButtons[i].getAttribute('data-quantity') == '0') {
+  if (sizeButtons[i].getAttribute('data-stock') <= 0) {
     sizeButtons[i].disabled = true;
   }
   sizeButtons[i].addEventListener('click', function() {
