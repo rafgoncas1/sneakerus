@@ -26,6 +26,23 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
 
+if DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': config("DJANGO_LOG_LEVEL", default="DEBUG"),
+            },
+        },
+    }
+
 
 ALLOWED_HOSTS = ["localhost", "sneakerus.onrender.com"]
 
