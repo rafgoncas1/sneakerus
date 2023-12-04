@@ -199,4 +199,4 @@ class Claim(models.Model):
         unique_together = ('product', 'order')
 
     def __str__(self):
-        return f'Claim {self.id} by {self.customer.user.email}'
+        return f'Claim {self.id} by {self.customer.email}'

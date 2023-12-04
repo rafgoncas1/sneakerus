@@ -395,9 +395,10 @@ def track_order(request, tracking_id):
         order_products = [item.product_size.product.id for item in order_items]
         claimed_products = Claim.objects.filter(order=order).values_list('product_id', flat=True)
         if request.user.is_authenticated:
-            user_ratings = Rating.objects.filter(customer=request.user.customer, product_id__in=order_products).values_list('product_id', flat=True)
+            user_ratings = Rating.objects.filter(customer=request.user.customer , product_id__in=order_products).values_list('product_id', flat=True)
         else:
-            user_ratings = []
+            user_ratings = Rating.objects.filter(customer=order.customer , product_id__in=order_products).values_list('product_id', flat=True)
+
         total_cost = order.get_cart_total
 
         context = {'order': order, 'order_items': order_items, 'total_cost': total_cost, 'cartItems': cart['cartItems'],'user_ratings': user_ratings, 'claimed_products': claimed_products}
@@ -438,7 +439,7 @@ def review_order(request, product_id):
     context = {'product':product, 'cartItems': cart['cartItems'],'error_message': error_message}
     return render(request, 'store/review_order.html', context)
 
-@login_required
+
 def claim_product(request, product_id,order_id):
     cart = cartData(request)
     product = get_object_or_404(Product, id=product_id)
@@ -452,12 +453,12 @@ def claim_product(request, product_id,order_id):
             claim = Claim.objects.create(
                 order=order,
                 product=product,
-                customer=request.user.customer,
+                customer=order.customer,
                 description=description
             )
             claim.save()
             messages.success(request, 'Tu reclamación ha sido enviada.')
-            return redirect('view_orders')
+            return HttpResponseRedirect("/tracking/" + order.tracking_id)
 
     context = {'product':product,'order': order,  'cartItems': cart['cartItems'], 'error_message': error_message}
     return render(request, 'store/claim_product.html', context)
