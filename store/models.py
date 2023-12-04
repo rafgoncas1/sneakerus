@@ -67,7 +67,7 @@ class Customer(models.Model):
         return self.name
 
 class Brand(models.Model):
-    name = models.CharField(max_length=200 , null=False, unique=True, blank=False)
+    name = models.CharField(max_length=50 , null=False, unique=True, blank=False)
     
     def __str__(self):
         return self.name
@@ -116,7 +116,7 @@ class Product(models.Model):
     brand = models.ForeignKey(Brand, null=True, on_delete = models.SET_NULL)
     image = models.ImageField(null=True, blank=True)
     description = models.CharField(max_length=200 , null=True)
-    details = models.CharField(max_length=200 , null=True)
+    details = models.CharField(max_length=500 , null=True)
     
 
     
